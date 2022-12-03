@@ -1,0 +1,10 @@
+bin
+include
+lib
+.envrc
+__pycache__
+env/
+.pytest_cache/
+flake-report/
+htmlcov/
+.coverage
