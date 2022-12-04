@@ -51,9 +51,9 @@ class Employee(AbstractUser):
     ROLES_CHOICES = [('sales', 'sales'),('support', 'support')]
 
     username = None
-    email = models.EmailField(unique=True, blank=False)
+    email = models.EmailField(blank=False, unique=True)
     phone_number = PhoneNumberField(blank=False, unique=True)
-    role = models.CharField(max_length=10, choices=ROLES_CHOICES)
+    role = models.CharField(blank=False, null= False, max_length=10, choices=ROLES_CHOICES)
     is_staff = models.BooleanField(default=True, editable=False)
     is_superuser = models.BooleanField(default=False, editable=False)
 
