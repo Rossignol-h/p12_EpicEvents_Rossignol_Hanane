@@ -4,9 +4,11 @@ from rest_framework import routers
 from django.contrib import admin
 
 from authentication.views import EmployeeViewSet
+from client.views import ClientViewSet
 
 router = routers.DefaultRouter()
 router.register('employees', EmployeeViewSet, basename='employee')
+router.register('clients', ClientViewSet, basename='client')
 
 urlpatterns = [
 
