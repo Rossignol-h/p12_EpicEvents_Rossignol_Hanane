@@ -1,6 +1,8 @@
+from phonenumber_field.modelfields import PhoneNumberField
 from django.contrib.auth.base_user import BaseUserManager
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import AbstractUser
+from permissions import add_to_group
 from django.db import models
 
 
@@ -20,6 +22,7 @@ class CustomUserManager(BaseUserManager):
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
         user.save()
+        add_to_group(user)
         return user
 
     def create_superuser(self, email, password, **extra_fields):
@@ -49,7 +52,7 @@ class Employee(AbstractUser):
 
     username = None
     email = models.EmailField(unique=True, blank=False)
-    phone_number = models.CharField(max_length=20)
+    phone_number = PhoneNumberField(blank=False, unique=True)
     role = models.CharField(max_length=10, choices=ROLES_CHOICES)
     is_staff = models.BooleanField(default=True, editable=False)
     is_superuser = models.BooleanField(default=False, editable=False)
@@ -59,7 +62,7 @@ class Employee(AbstractUser):
 
     objects = CustomUserManager()
 
-    def __str__(self):
+    def __str__(self)-> str:
         """
             String representing this Model object.
         """

@@ -34,7 +34,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'authentication',
+    'phonenumber_field',
 ]
+
+PHONENUMBER_DEFAULT_REGION = 'FR'
 
 AUTH_USER_MODEL = 'authentication.Employee' # add the User customized model
 
