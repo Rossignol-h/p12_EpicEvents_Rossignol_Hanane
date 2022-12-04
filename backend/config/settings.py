@@ -35,6 +35,9 @@ INSTALLED_APPS = [
     'rest_framework',
     'authentication',
     'phonenumber_field',
+    'client',
+    'contract',
+    'event'
 ]
 
 PHONENUMBER_DEFAULT_REGION = 'FR'
