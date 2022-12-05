@@ -7,6 +7,7 @@ from rest_framework import filters
 from django.conf import settings
 
 from .serializers import ClientSerializer
+from permissions import ObjectPermission
 from .models import Client
 
 User = settings.AUTH_USER_MODEL
@@ -20,7 +21,7 @@ class ClientViewSet(viewsets.ModelViewSet):
     """
     serializer_class = ClientSerializer
     queryset = Client.objects.all()
-    permission_classes = [DjangoModelPermissions]
+    permission_classes = [DjangoModelPermissions, ObjectPermission]
     filter_backends = [filters.SearchFilter]
     search_fields = ['company_name', 'is_prospect', 'email']
 
