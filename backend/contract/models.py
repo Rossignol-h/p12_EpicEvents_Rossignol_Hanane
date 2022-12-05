@@ -19,11 +19,11 @@ class Contract(models.Model):
     date_created = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)
 
-    sales_contact = models.ForeignKey(
-        employee_sales,
-        on_delete=models.CASCADE,
-        limit_choices_to={'role': 'sales'},
-        null=True)
+    # sales_contact = models.ForeignKey(
+    #     employee_sales,
+    #     on_delete=models.CASCADE,
+    #     limit_choices_to={'role': 'sales'},
+    #     null=True)
 
     client = models.ForeignKey(
         Client,
@@ -41,7 +41,28 @@ class Contract(models.Model):
         """
             String for representing this Model object.
         """
-        return f"Contract: {self.id} - Contact: {self.sales_contact} - Client: {self.client.company_name}"
+        return f"Contract: {self.id} - Client: {self.client.company_name}"
+
+
+
+class ContractManager(models.Model):
+    contract = models.ForeignKey(
+        Contract,
+        on_delete=models.CASCADE,
+        null=False
+    )
+
+    sales_contact = models.ForeignKey(
+        employee_sales,
+        on_delete=models.CASCADE,
+        limit_choices_to={'role': 'sales'},
+        null=True)
+
+    # def __str__(self)-> str:
+    #     """
+    #         String for representing this Model object.
+    #     """
+    #     return f"Contract: {self.contract} Assignee: {self.sales_contact}"
 
 
 class ContractStatus(models.Model):
