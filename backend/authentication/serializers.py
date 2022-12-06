@@ -11,10 +11,10 @@ class EmployeeSerializer(ModelSerializer):
 
     def validate(self, data):
         """
-            Check that email ends with @epicevent.com
+            Check that email ends with @epicevents.com
         """
         if not data['email'].endswith('@epicevents.com'):
-            raise serializers.ValidationError("Wrong email format: Please make sure to write @epicevent.com")
+            raise serializers.ValidationError("Wrong email format: Please make sure to write @epicevents.com")
         return data
 
 

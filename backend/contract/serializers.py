@@ -1,21 +1,15 @@
 from rest_framework.serializers import ModelSerializer
-from rest_framework import serializers
-from .models import Contract, ContractStatus, ContractManager
-# from authentication.models import Employee
+from .models import Contract, ContractStatus
+
+# ============================================= SERIALIZER FOR CREATE A CONTRACT
 
 
-class ContractManagerSerializer(ModelSerializer):
-    class Meta:
-        model = ContractManager
-        # fields = ['id', 'sales_contact', 'contract__client.email', 'contract__payment_due', 'contract__status' ]
-        fields = '__all__'
-
-
-class ContractMemberSerializer(ModelSerializer):
+class ContractSerializer(ModelSerializer):
     class Meta:
         model = Contract
         fields = '__all__'
-        # read_only_fields = ('amount',)
+
+# ============================================= SERIALIZER FOR ALL SIGNED CONTRACTS
 
 
 class ContractStatusSerializer(ModelSerializer):

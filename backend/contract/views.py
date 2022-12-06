@@ -5,37 +5,25 @@ from rest_framework.response import Response
 from rest_framework import viewsets, status
 from rest_framework import filters
 
-from .serializers import ContractManagerSerializer, ContractMemberSerializer, ContractStatusSerializer
-from permissions import ObjectPermission
-from .models import Contract, ContractStatus, ContractManager
+from .serializers import ContractSerializer, ContractStatusSerializer
+from permissions import ObjectPermission, EmployeePermission
+from .models import Contract, ContractStatus
 from client.models import Client
 
 # =========================================================== CONTRACT VIEW
 
-class ContractSalesViewSet(viewsets.ModelViewSet):
+class ContractViewSet(viewsets.ModelViewSet):
     """
         Add, retrieve, update and delete a contract to the crm.
     """
-    # serializer_class = ContractManagerSerializer
-    # default_serializer_class = ContractMemberSerializer # Your default serializer
-    serializer_class = ContractMemberSerializer
+    serializer_class = ContractSerializer
     queryset = Contract.objects.all()
     permission_classes = [DjangoModelPermissions, ObjectPermission]
     filter_backends = [filters.SearchFilter]
     search_fields = ['date_created', 'amount', 'client_id__email', 'client_id__company_name' ]
 
-    # def get_serializer_context(self):
-    #     """
-    #         Access to current user
-    #     """
-    #     context = super(ContractViewSet, self).get_serializer_context()
-    #     context.update({"current_user": self.request.user})
-    #     return context
 
-    
-    def override_contract(self, new_contract):
-        ContractManager.objects.create(contract=new_contract)
-
+    def update_foreignkeys(self, new_contract):
         if self.request.data['status'] == 'True':
             ContractStatus.objects.create(contract=new_contract)
             current_client = Client.objects.get(id=self.request.data['client'])
@@ -44,16 +32,11 @@ class ContractSalesViewSet(viewsets.ModelViewSet):
 
 
     def create(self, request, *args, **kwargs):
-        # if self.request.user.is_superuser:
-        #     self.serializer = self.serializer_class
-        # else:
-        #     self.serializer = self.default_serializer_class
-
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        new_contract = serializer.save()
-        self.override_contract(new_contract)
-        return Response({'new_contract': self.serializer(new_contract,
+        new_contract = serializer.save(sales_contact= self.request.user)
+        self.update_foreignkeys(new_contract)
+        return Response({'new_contract': self.serializer_class(new_contract,
                             context=self.get_serializer_context()).data,
                             'message':
                             f"This new contract is successfully added to the crm."},
@@ -92,7 +75,7 @@ class ContractSalesViewSet(viewsets.ModelViewSet):
             raise ValidationError("This contract doesn't exist")
 
 
-# =========================================================== CONTRACT VIEW
+# =========================================================== SIGNED CONTRACT VIEW
 
 
 class ContractStatusViewSet(viewsets.ModelViewSet):
@@ -102,5 +85,3 @@ class ContractStatusViewSet(viewsets.ModelViewSet):
     serializer_class = ContractStatusSerializer
     queryset = ContractStatus.objects.all()
     permission_classes = [DjangoModelPermissions, ObjectPermission]
-    filter_backends = [filters.SearchFilter]
-    search_fields = ['contract',]

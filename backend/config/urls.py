@@ -5,12 +5,12 @@ from django.contrib import admin
 
 from authentication.views import EmployeeViewSet
 from client.views import ClientViewSet
-from contract.views import ContractSalesViewSet
+from contract.views import ContractViewSet
 
 router = routers.DefaultRouter()
 router.register('employees', EmployeeViewSet, basename='employee')
 router.register('clients', ClientViewSet, basename='client')
-router.register('contracts', ContractSalesViewSet, basename='contract')
+router.register('contracts', ContractViewSet, basename='contract')
 
 urlpatterns = [
 
