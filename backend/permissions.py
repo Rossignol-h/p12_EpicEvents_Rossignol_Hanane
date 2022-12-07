@@ -120,3 +120,18 @@ class ObjectPermission(permissions.BasePermission):
             return False
 
 # ============================ PERMISSION FOR EVENTS
+
+
+class EventPermission(permissions.BasePermission):
+    """ 
+        Check if the connected user
+        is the main contact in charge of this event;
+    """
+
+    def has_object_permission(self, request, view, obj):
+        self.message = NOT_IN_CHARGE
+
+        if view.action in ['retrieve','update'] and (request.user == obj.support_contact.id):
+            return True
+        else:
+            return False

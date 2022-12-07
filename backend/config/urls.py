@@ -1,6 +1,8 @@
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from django.conf.urls.static import static
 from django.urls import path, include
 from rest_framework import routers
+from django.conf import settings
 from django.contrib import admin
 
 from authentication.views import EmployeeViewSet
@@ -15,6 +17,9 @@ router.register('contracts', ContractViewSet, basename='contract')
 router.register('events', EventsViewSet, basename='events')
 router.register(r"^(?P<contract_id>[^/.]+)/events", EventViewSet, basename="event")
 
+# For customized admin page's title
+admin.site.index_title = 'Welcome to the CRM of EpicEvents'
+
 urlpatterns = [
 
     path('admin/', admin.site.urls),
@@ -22,3 +27,8 @@ urlpatterns = [
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('crm/', include(router.urls))
 ]
+
+# ================================================================ STATIC/MEDIA
+
+if settings.DEBUG:
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATICFILES_DIRS)

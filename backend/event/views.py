@@ -8,10 +8,10 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import get_object_or_404
 from django.http import Http404
 
+from contract.models import ContractStatus
 from .serializers import EventSerializer
 from permissions import EventPermission
 from .models import Event
-from contract.models import ContractStatus
 
 # =========================================================== EVENT VIEW
 
