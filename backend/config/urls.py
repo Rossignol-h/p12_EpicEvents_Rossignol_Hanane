@@ -6,11 +6,14 @@ from django.contrib import admin
 from authentication.views import EmployeeViewSet
 from client.views import ClientViewSet
 from contract.views import ContractViewSet
+from event.views import EventViewSet, EventsViewSet
 
 router = routers.DefaultRouter()
 router.register('employees', EmployeeViewSet, basename='employee')
 router.register('clients', ClientViewSet, basename='client')
 router.register('contracts', ContractViewSet, basename='contract')
+router.register('events', EventsViewSet, basename='events')
+router.register(r"^(?P<contract_id>[^/.]+)/events", EventViewSet, basename="event")
 
 urlpatterns = [
 
