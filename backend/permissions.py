@@ -1,6 +1,8 @@
 from django.contrib.auth.models import Group, Permission
 from rest_framework import permissions
 
+from contract.models import Contract, ContractStatus
+
 
 # ====================================== CREATE GROUPS PERMISSIONS
 
@@ -82,6 +84,7 @@ def add_to_group(new_employee):
 
 NOT_ALLOWED = "You are not a manager !"
 NOT_IN_CHARGE = "You are not in charge of this !"
+NOT_SALES_IN_CHARGE = "You can't create this event, beacause you're not in charge of this contract !"
 
 # ============================================ PERMISSION FOR EMPLOYEES
 
@@ -110,7 +113,7 @@ class ObjectPermission(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         self.message = NOT_IN_CHARGE
 
-        if view.action in ['retrieve','update'] and request.user == obj.sales_contact_id:
+        if view.action in ['retrieve','update'] and request.user == obj.sales_contact:
             return True
 
         elif request.user.is_superuser:
@@ -120,18 +123,29 @@ class ObjectPermission(permissions.BasePermission):
             return False
 
 # ============================ PERMISSION FOR EVENTS
-
+from django.http import Http404
 
 class EventPermission(permissions.BasePermission):
     """ 
         Check if the connected user
         is the main contact in charge of this event;
     """
+    def has_permission(self, request, view):
+        self.message = NOT_SALES_IN_CHARGE
+        current_contract = view.get_contract()
+        if current_contract.exists():
+            sales_of_current_project = Contract.objects.filter(
+                id=current_contract.id,
+                sales_contact=request.user).exists()
+            if sales_of_current_project:
+                return True
+            return False
+        raise Http404()
 
     def has_object_permission(self, request, view, obj):
         self.message = NOT_IN_CHARGE
 
-        if view.action in ['retrieve','update'] and (request.user == obj.support_contact.id):
+        if view.action in ['retrieve','update'] and (request.user == obj.support_contact):
             return True
         else:
             return False

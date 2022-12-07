@@ -15,6 +15,7 @@ User = settings.AUTH_USER_MODEL
 
 # =========================================================== CLIENT VIEW
 
+
 class ClientViewSet(viewsets.ModelViewSet):
     """
         Add, retrieve, update and delete client to the crm.
@@ -24,6 +25,18 @@ class ClientViewSet(viewsets.ModelViewSet):
     permission_classes = [DjangoModelPermissions, ObjectPermission]
     filter_backends = [filters.SearchFilter]
     search_fields = ['company_name', 'is_prospect', 'email']
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        new_client = serializer.save(sales_contact=request.user)
+
+        return Response({'new_client': ClientSerializer(new_client,
+                            context=self.get_serializer_context()).data,
+                            'message':
+                            f"This new client is successfully added to the crm."},
+                            status=status.HTTP_201_CREATED)
+
 
     def destroy(self, request, *args, **kwargs):
         try:

@@ -16,7 +16,7 @@ from .models import Event
 # =========================================================== EVENT VIEW
 
 
-class EventsViewSet(viewsets.ReadOnlyModelViewSet):
+class ReadEventsView(viewsets.ReadOnlyModelViewSet):
     """
     List all events.
     """
@@ -38,18 +38,20 @@ class EventViewSet(viewsets.ModelViewSet):
     search_fields = ['event_date', 'client_id', 'client_id.email']
     filter_backends = (filters.SearchFilter,)
 
-    def get_contract_status(self):
+    def get_contract(self):
         lookup_url_kwarg = self.kwargs['contract_id']
         return get_object_or_404(ContractStatus, pk=lookup_url_kwarg)
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         try:
-            current_contract = get_object_or_404(ContractStatus, pk=self.kwargs['contract_id'])
+
+            current_contract = self.get_contract()
             serializer.is_valid(raise_exception=True)
             new_event = serializer.save(
-                client_id=current_contract.contract.client_id, 
-                event_status=current_contract)
+                        client=current_contract.contract.client, 
+                        event_status=current_contract
+                        )
 
             return Response({
                 'New event': EventSerializer(new_event, context=self.get_serializer_context()).data,

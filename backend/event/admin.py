@@ -17,7 +17,7 @@ class EventAdminForm(forms.ModelForm):
             to the event, then save it.
         """
         event = super().save(commit=False)
-        event.client_id = event.event_status.contract.client_id
+        event.client = event.event_status.contract.client
         if commit:
             event.save()
         return event
@@ -48,14 +48,14 @@ class EventAdmin(admin.ModelAdmin):
 
     def has_change_permission(self, request, obj=None):
         """
-            Only the support member in charge of the current event, 
+            Only the support employee in charge of the current event, 
             or manager
             can update it.
         """
         if request.user.role == 'support':
             if obj is not None and obj.support_contact == request.user:
                     return True
-        elif request.user.role == 'management' or request.user.is_superuser:
+        elif request.user.is_superuser:
             return True
         else:
             return False

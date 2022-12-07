@@ -22,8 +22,9 @@ class Contract(models.Model):
 
     client = models.ForeignKey(
         Client,
+        related_name="client_contract",
         on_delete=models.CASCADE,
-        null=False,
+        null=True
     )
 
     sales_contact = models.ForeignKey(

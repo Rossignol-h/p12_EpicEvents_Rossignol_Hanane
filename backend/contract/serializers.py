@@ -7,7 +7,7 @@ from .models import Contract, ContractStatus
 class ContractSerializer(ModelSerializer):
     class Meta:
         model = Contract
-        fields = '__all__'
+        fields = "__all__"
 
 # ============================================= SERIALIZER FOR ALL SIGNED CONTRACTS
 

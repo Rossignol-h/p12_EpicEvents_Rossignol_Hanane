@@ -7,14 +7,17 @@ from django.contrib import admin
 
 from authentication.views import EmployeeViewSet
 from client.views import ClientViewSet
-from contract.views import ContractViewSet
-from event.views import EventViewSet, EventsViewSet
+from contract.views import ContractView, ReadContractsView
+from event.views import EventViewSet, ReadEventsView
 
 router = routers.DefaultRouter()
 router.register('employees', EmployeeViewSet, basename='employee')
 router.register('clients', ClientViewSet, basename='client')
-router.register('contracts', ContractViewSet, basename='contract')
-router.register('events', EventsViewSet, basename='events')
+
+router.register('contracts', ReadContractsView, basename='contracts')
+router.register(r"^(?P<client_id>[^/.]+)/contracts", ContractView, basename="contract")
+
+router.register('events', ReadEventsView, basename='events')
 router.register(r"^(?P<contract_id>[^/.]+)/events", EventViewSet, basename="event")
 
 # For customized admin page's title
