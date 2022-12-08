@@ -16,8 +16,7 @@
 
  #### User permissions :
 
-![All permisions](../backend/static/groups.png)
-
+![All permisions](./backend/static/groups.png)
 
 ## Installation
 
