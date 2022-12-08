@@ -78,8 +78,11 @@ class ContractView(viewsets.ModelViewSet):
             if current_client:
                 current_client.is_prospect = "False"
                 current_client.save()
-
-
+        else:
+            if signed_contract:
+                ContractStatus.objects.delete(contract=new_contract)
+            else:
+                pass
 # ====================================================================== CUSTOM CREATE CONTRACT
 
     def create(self, request, *args, **kwargs):

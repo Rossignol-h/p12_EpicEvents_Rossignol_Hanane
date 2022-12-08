@@ -25,7 +25,7 @@ class Client(models.Model):
 
     sales_contact = models.ForeignKey(
         employee_sales,
-        on_delete=models.CASCADE,
+        on_delete=models.DO_NOTHING,
         limit_choices_to={'role': 'sales'},
         null=True)
 

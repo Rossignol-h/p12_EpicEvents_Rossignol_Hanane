@@ -6,13 +6,14 @@ from django.conf import settings
 from django.contrib import admin
 
 from authentication.views import EmployeeViewSet
-from client.views import ClientViewSet
+from client.views import ReadClientsView, ClientDetailViewSet
 from contract.views import ContractView, ReadContractsView
 from event.views import EventViewSet, ReadEventsView
 
 router = routers.DefaultRouter()
 router.register('employees', EmployeeViewSet, basename='employee')
-router.register('clients', ClientViewSet, basename='client')
+router.register('clients', ReadClientsView, basename='clients')
+router.register('client', ClientDetailViewSet, basename='client')
 
 router.register('contracts', ReadContractsView, basename='contracts')
 router.register(r"^(?P<client_id>[^/.]+)/contracts", ContractView, basename="contract")

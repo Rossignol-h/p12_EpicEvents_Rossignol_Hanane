@@ -52,7 +52,8 @@ class ContractStatus(models.Model):
     """
     contract = models.OneToOneField(
         Contract,
-        on_delete=models.CASCADE,
+        on_delete=models.DO_NOTHING,
+        limit_choices_to={'status': 'True'},
         null=False,
         primary_key=True
     )

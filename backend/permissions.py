@@ -113,7 +113,7 @@ class ObjectPermission(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         self.message = NOT_IN_CHARGE
 
-        if view.action in ['retrieve','update'] and request.user == obj.sales_contact:
+        if view.action in ['list','retrieve','update'] and request.user == obj.sales_contact:
             return True
 
         elif request.user.is_superuser:
