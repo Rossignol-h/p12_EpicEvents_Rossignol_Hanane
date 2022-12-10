@@ -19,7 +19,7 @@ class Client(models.Model):
     phone =  PhoneNumberField(blank=False, unique=True)
     mobile = PhoneNumberField(blank=False, unique=True)
     company_name = models.CharField(blank=False, max_length=50, unique=True)
-    is_prospect = models.BooleanField(blank=False, default=True)
+    is_prospect = models.BooleanField(blank=False, default=True, help_text='Is it a prospect ?')
     date_joined = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)
 

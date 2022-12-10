@@ -13,7 +13,7 @@ from .serializers import EventSerializer
 from permissions import EventPermission
 from .models import Event
 
-# =========================================================== EVENT VIEW
+# ================================================================= EVENT VIEW
 
 
 class ReadEventsView(viewsets.ReadOnlyModelViewSet):
@@ -25,6 +25,8 @@ class ReadEventsView(viewsets.ReadOnlyModelViewSet):
     permission_classes = [DjangoModelPermissions]
     filter_backends = [filters.SearchFilter]
     search_fields = ['event_date', 'client_id__email', 'client_id__company_name']
+
+# ================================================================= EVENT VIEW
 
 
 class EventViewSet(viewsets.ModelViewSet):

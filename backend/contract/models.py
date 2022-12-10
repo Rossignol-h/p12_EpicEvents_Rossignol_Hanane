@@ -6,7 +6,7 @@ from client.models import Client
 employee_sales = settings.AUTH_USER_MODEL
 
 
-# =================================================== CONTRACT MODEL
+# ======================================================================== CONTRACT MODEL
 
 
 class Contract(models.Model):
@@ -42,7 +42,10 @@ class Contract(models.Model):
         """
             String for representing this Model object.
         """
-        return f"Contract: {self.id} - Client: {self.client.company_name}"
+        return f"Contract: {self.id} - Client: {self.client.company_name}  - Sales contact: {self.sales_contact}"
+
+
+# ======================================================================== SIGNED CONTRACTS MODELS
 
 
 class ContractStatus(models.Model):
@@ -57,9 +60,3 @@ class ContractStatus(models.Model):
         null=False,
         primary_key=True
     )
-
-    def __str__(self)-> str:
-        """
-            String for representing this Model object.
-        """
-        return f"Signed contract: {self.contract.id}"

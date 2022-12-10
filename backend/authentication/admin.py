@@ -28,13 +28,21 @@ class EmployeeAdminForm(forms.ModelForm):
         return password2
 
     def clean_email(self):
+        """
+            Make sure that the email address 
+            ends with epicevents.com, 
+            for avoiding enter personnal employee's email.
+        """
         email = self.cleaned_data["email"]
         if not email.endswith('@epicevents.com'):
-            raise forms.ValidationError("No Vampires")
+            raise forms.ValidationError("Please, email has to end with epicevents.com")
         return self.cleaned_data["email"]
 
     def save(self, commit=True):
-        # Save the provided password in hashed format
+        """
+            Make sure that the password is hashed
+            before saving an employee.
+        """
         user = super(EmployeeAdminForm, self).save(commit=False)
         user.set_password(self.cleaned_data["password1"])
         if commit:
@@ -44,6 +52,7 @@ class EmployeeAdminForm(forms.ModelForm):
 # ======================================================== CUSTOM USER ADMIN
 
 
+@admin.register(Employee)
 class EmployeeAdmin(UserAdmin):
 
     add_form = EmployeeAdminForm
@@ -67,5 +76,3 @@ class EmployeeAdmin(UserAdmin):
 
     radio_fields = {'role': admin.HORIZONTAL}
     ordering = ('id',)
-
-admin.site.register(Employee, EmployeeAdmin)

@@ -49,6 +49,22 @@ python3 -m venv env  # on Mac or Linux
 ```bash
 pip install -r requirements.txt
 ```
+
+#### Complete your database configuration parameters in file 'settings.ini' :
+```bash
+Example :
+
+SECRET_KEY='django-insecure-1352xsmprby1=t5-a9q5^m3+g*xbq4c(5svawp-ql)0gd2h=e^j6'
+DEBUG=True
+# ALLOWED_HOSTS=.127.0.0.1, .localhost 
+DB_NAME=my_database 
+DB_USER=my_username
+DB_PASSWORD=mypassword_database
+DB_HOST=localhost
+DB_PORT=5432
+
+```
+
 #### open your terminal at the root of the app  :
 
 ```bash
@@ -58,6 +74,14 @@ cd backend
 #### Generate the SQlite database :
 ```bash
 python manage.py migrate
+```
+
+#### Create a superuser :
+```bash
+python manage.py createsuperuser 
+
+# then follow instructions
+# Please not that the email should be in this format xxxx@epicevents.com
 ```
 
 #### Run the server :
@@ -77,7 +101,8 @@ Starting development server at http://127.0.0.1:8000/
 But to access the first step of using this API go to :
 
 ```bash
-http://127.0.0.1:8000/login/ 
+http://127.0.0.1:8000/admin/ 
+# now login as admin with your superuser credentials
 ```
 
 ## Documentation  

@@ -16,12 +16,10 @@ User = settings.AUTH_USER_MODEL
 # =========================================================== EMPLOYEE VIEW
 
 
-
 class EmployeeViewSet(viewsets.ModelViewSet):
     """
         Add, retrieve, update and delete an employee instance.
     """
-
     serializer_class = EmployeeSerializer
     queryset = Employee.objects.all()
     permission_classes = [DjangoModelPermissions, EmployeePermission]

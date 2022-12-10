@@ -6,31 +6,32 @@ from rest_framework import status, viewsets
 from rest_framework import filters
 from django.conf import settings
 
-from .serializers import ClientDetailSerializer, ClientListSerializer
+from .serializers import ClientSerializer
 from permissions import ObjectPermission
 from .models import Client
 from contract.models import Contract
+from event.models import Event
 
 User = settings.AUTH_USER_MODEL
 
 # =========================================================== READ CONTRACT VIEW
 
 
-class ReadClientsView(viewsets.ReadOnlyModelViewSet):
-    """
-    List all clients with restricted informations.
-    """
-    serializer_class = ClientListSerializer
-    queryset = Client.objects.all()
-    permission_classes = [DjangoModelPermissions, ObjectPermission]
-    filter_backends = [filters.SearchFilter]
-    search_fields = ['email', 'company_name' ]
+# class ReadClientsView(viewsets.ReadOnlyModelViewSet):
+#     """
+#     List all clients with restricted informations.
+#     """
+#     serializer_class = ClientListSerializer
+#     queryset = Client.objects.all()
+#     permission_classes = [DjangoModelPermissions, ObjectPermission]
+#     filter_backends = [filters.SearchFilter]
+#     search_fields = ['email', 'company_name' ]
 
-# ====================================================================== DISABLE RETRIEVE ACTION FOR THIS VIEW
+# # ====================================================================== DISABLE RETRIEVE ACTION FOR THIS VIEW
 
-    def retrieve(self, request, pk=None):
-        response = {'message': 'Retrieve method not allowed, please go to this endpoint crm/client/client_id/'}
-        return Response(response, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+#     def retrieve(self, request, pk=None):
+#         response = {'message': 'Retrieve method not allowed, please go to this endpoint crm/client/client_id/'}
+#         return Response(response, status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
     # def list(self, request, pk=None):
@@ -41,15 +42,15 @@ class ReadClientsView(viewsets.ReadOnlyModelViewSet):
     #     return Response(response, status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
-    def get_queryset(self):
-        if self.request.META['QUERY_STRING'].startswith('search='):
-            client_of_user = Client.objects.filter(sales_contact=self.request.user)
-            if client_of_user.count() > 1:
-                return client_of_user
-            else : 
-                return self.permission_classes.ObjectPermission
-        else:
-            return Client.objects.all()
+    # def get_queryset(self):
+    #     if self.request.META['QUERY_STRING'].startswith('search='):
+    #         client_of_user = Client.objects.filter(sales_contact=self.request.user)
+    #         if client_of_user.count() > 1:
+    #             return client_of_user
+    #         else : 
+    #             return ObjectPermission
+    #     else:
+    #         return Client.objects.all()
             
     # def get_object(self):
         # return super().get_object()       
@@ -74,12 +75,12 @@ class ReadClientsView(viewsets.ReadOnlyModelViewSet):
 # =========================================================== CLIENT VIEW
 
 
-class ClientDetailViewSet(viewsets.ModelViewSet):
+class ClientViewSet(viewsets.ModelViewSet):
     """
         Add, retrieve, update and delete client to the crm.
     """
-    serializer_class = ClientDetailSerializer
-    queryset = Client.objects.all()
+    serializer_class = ClientSerializer
+    # queryset = Client.objects.all()
     permission_classes = [DjangoModelPermissions, ObjectPermission]
     filter_backends = [filters.SearchFilter]
     search_fields = ['company_name','email']
@@ -88,10 +89,39 @@ class ClientDetailViewSet(viewsets.ModelViewSet):
 # ====================================================================== DISABLE LIST ACTION FOR THIS VIEW
 
 
-    def list(self, request, pk=None):
+    # def list(self, request, pk=None):
 
-        response = {'message': 'List method not allowed, please go to this endpoint crm/clients/'}
-        return Response(response, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    #     response = {'message': 'List method not allowed, please go to this endpoint crm/clients/'}
+    #     return Response(response, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+
+# ====================================================================== GET ALL CLIENTS OF AUTHENTICATED EMPLOYEE
+
+    def get_queryset(self):
+        employee = self.request.user
+        if employee.role == 'sales':
+            try: 
+                client_of_current_employee = Client.objects.filter(sales_contact=employee)
+                if client_of_current_employee:
+                    return client_of_current_employee
+            except:
+                return Client.objects.none()
+            
+            # except ObjectDoesNotExist:
+                # raise ValidationError("Sorry, Currently You have no clients")
+        
+        # elif employee.role == 'support':
+        #     return Client.event_set.filter(support_contact=employee)
+
+        if employee.role == 'support':
+            clients = [e.client.id for e in Event.objects.filter(support_contact=employee)]
+            for client in clients:
+                return Client.objects.filter(id=client)
+
+        elif employee.is_superuser:
+            return Client.objects.all()
+        else:
+            return Client.objects.none()
 
 
 # ====================================================================== CUSTOM CREATE CLIENT
@@ -141,7 +171,7 @@ class ClientDetailViewSet(viewsets.ModelViewSet):
 
     def destroy(self, request, *args, **kwargs):
         """
-            Displays a success message for the frontend.
+            Displays a success message to the frontend.
         """
         try:
             client_to_delete = Client.objects.get(id=self.kwargs['pk'])

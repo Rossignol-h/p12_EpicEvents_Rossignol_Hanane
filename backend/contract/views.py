@@ -13,6 +13,7 @@ from .serializers import ContractSerializer, ContractStatusSerializer
 from permissions import ObjectPermission
 from .models import Contract, ContractStatus
 from client.models import Client
+from event.models import Event
 
 
 # =========================================================== READ CONTRACT VIEW
@@ -20,13 +21,33 @@ from client.models import Client
 
 class ReadContractsView(viewsets.ReadOnlyModelViewSet):
     """
-    List all contracts.
+    List all contracts of authenticated employee.
     """
     serializer_class = ContractSerializer
-    queryset = Contract.objects.all()
+    # queryset = Contract.objects.all()
     permission_classes = [DjangoModelPermissions]
     filter_backends = [filters.SearchFilter]
     search_fields = ['date_created', 'amount', 'client_id__email', 'client_id__company_name' ]
+
+    # ====================================================================== GET CONTRACTS OF AUTHENTICATED EMPLOYEE
+
+
+    def get_queryset(self):
+        """
+            Make sure to return appropriate queries :
+            if the user is superuser(manager) ==> return all contracts
+            if the user role is sales ==> return only contracts, that he is in charge of 
+            if the user is support ==> return only contracts of events, that he is in charge of
+        """
+        employee = self.request.user
+        if employee.role == 'sales':
+            return Contract.objects.filter(sales_contact=employee)
+        elif employee.role == 'support':
+            return Contract.objects.filter(event__support_contact=employee)
+        elif employee.is_superuser:
+            return Contract.objects.all()
+        else:
+            return Contract.objects.none()
 
 # =========================================================== CONTRACT VIEW
 
@@ -65,24 +86,33 @@ class ContractView(viewsets.ModelViewSet):
 
 
     def update_foreignkeys(self, new_contract):
-
+        """
+        if contract status is true:
+            then add it to contract status table
+            create a new event
+            update the status 'is_prospect' of current client to False
+            because is not a prospect anymore.
+        
+        """
         if self.request.data['status'] == 'True':
 
             signed_contract = ContractStatus.objects.filter(contract=new_contract)
             if signed_contract:
                 pass
             else: 
-                ContractStatus.objects.create(contract=new_contract)
+                new_signed_contract = ContractStatus.objects.create(contract=new_contract)
+                Event.objects.create(
+                    event_status=new_signed_contract,
+                    client=self.get_client()
+                )
             
             current_client = self.get_client()
             if current_client:
                 current_client.is_prospect = "False"
                 current_client.save()
+            
         else:
-            if signed_contract:
-                ContractStatus.objects.delete(contract=new_contract)
-            else:
-                pass
+            pass
 # ====================================================================== CUSTOM CREATE CONTRACT
 
     def create(self, request, *args, **kwargs):

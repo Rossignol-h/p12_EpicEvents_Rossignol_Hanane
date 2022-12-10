@@ -3,15 +3,7 @@ from rest_framework import serializers
 from .models import Client
 
 
-class ClientListSerializer(ModelSerializer):
-    sales_contact = serializers.ReadOnlyField(source='sales_contact.email', read_only=True)
-
-    class Meta:
-        model = Client
-        fields = ['id', 'company_name', 'is_prospect', 'sales_contact']
-
-
-class ClientDetailSerializer(ModelSerializer):
+class ClientSerializer(ModelSerializer):
     sales_contact = serializers.ReadOnlyField(source='sales_contact.email', read_only=True)
 
     class Meta:

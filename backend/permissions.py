@@ -39,13 +39,11 @@ def create_groups():
         add_contractstatus, change_contractstatus, view_contractstatus,
         add_event, view_event
     ]
-    try:
-        if not Group.objects.get(name='sales'):
-            sales_group = Group(name='sales')
-            sales_group.save()
-            sales_group.permissions.set(sales_permissions)
-    except:
-        pass
+
+    sales_group = Group(name='sales')
+    sales_group.save()
+    sales_group.permissions.set(sales_permissions)
+
 
 # =============================================== SUPPORT PERMISSIONS
 
@@ -54,13 +52,13 @@ def create_groups():
         view_client, view_contract,
         change_event, view_event
     ]
-    try:
-        if not Group.objects.get(name='support'):
-            support_group = Group(name='support')
-            support_group.save()
-            support_group.permissions.set(support_permissions)
-    except:
-        pass
+    # if Group.objects.get(name='support').exists():
+    #     pass
+
+    # else:
+    support_group = Group(name='support')
+    support_group.save()
+    support_group.permissions.set(support_permissions)
 
 
 # ====================================== ADD AN EMPLOYEE TO GROUP PERMISSION
@@ -96,7 +94,6 @@ class EmployeePermission(permissions.BasePermission):
     
     def has_permission(self, request, view):
         self.message = NOT_ALLOWED
-
         if request.user.is_superuser:
             return True
         return False
@@ -149,3 +146,25 @@ class EventPermission(permissions.BasePermission):
             return True
         else:
             return False
+
+# ================================================ CLIENT PERMISSION
+
+class ClientsPermission(permissions.BasePermission):
+    '''
+    management: all permissions
+    sale: safe methods, post , put if user is sale support of the client
+    support: safe methods if user is support _contact for an event of the concern client
+    '''
+    def has_object_permission(self, request, view, obj):
+        if request.method in SAFE_METHODS:
+            if request.user.role == "support":
+                return obj.event_set.filter(support_contact=request.user)
+            else:
+                return request.user.role in ["sales"]
+        if request.method == "POST":
+            return request.user.role in ["sales"]
+        if request.method == "PUT":
+            if request.user.role == "sale":
+                return obj.sales_contact == request.user
+            else:
+                return request.user.is_superuser

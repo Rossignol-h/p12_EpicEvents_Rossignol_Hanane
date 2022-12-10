@@ -3,6 +3,7 @@ from django.contrib.auth.base_user import BaseUserManager
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import AbstractUser
 from permissions import create_groups, add_to_group
+from django.contrib.auth.models import Group
 from django.db import models
 
 
@@ -38,6 +39,8 @@ class CustomUserManager(BaseUserManager):
             raise ValueError(_('Superuser must have is_staff=True.'))
         if extra_fields.get('is_superuser') is not True:
             raise ValueError(_('Superuser must have is_superuser=True.'))
+        if not Group.objects.get(name='support'):
+            raise ValueError(_('A problem occured please, makemigrations & migrate.'))
         return self.create_user(email, password, **extra_fields)
 
 

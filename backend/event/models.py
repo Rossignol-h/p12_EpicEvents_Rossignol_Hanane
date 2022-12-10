@@ -24,13 +24,14 @@ class Event(models.Model):
 
     event_status = models.ForeignKey(
         ContractStatus,
+        related_name="event_contract",
         on_delete=models.CASCADE,
         null=True
     )
 
     client = models.ForeignKey(
         Client,
-        related_name="client",
+        related_name="event_client",
         on_delete=models.CASCADE,
         null=True
     )

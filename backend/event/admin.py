@@ -1,6 +1,7 @@
 from django.contrib import admin
-from .models import Event
 from django import forms
+
+from .models import Event
 
 
 # ======================================================== CUSTOM MODEL FORM
@@ -11,16 +12,17 @@ class EventAdminForm(forms.ModelForm):
         model = Event
         fields = '__all__'
 
-    def save(self, commit=True):
-        """
-            Automatically add the client of the contract
-            to the event, then save it.
-        """
-        event = super().save(commit=False)
-        event.client = event.event_status.contract.client
-        if commit:
-            event.save()
-        return event
+    # def save(self, commit=True):
+    #     """
+    #         Automatically add the client of the contract
+    #         to the event, then save it.
+    #     """
+    #     event = super().save(commit=False)
+    #     event.client = event.event_status.contract.client
+    #     if commit:
+    #         event.save()
+    #     return event
+
 
 # ======================================================== CUSTOM ADMIN PAGE
 
@@ -31,17 +33,31 @@ class EventAdmin(admin.ModelAdmin):
     customize all the fields in the admin
     '''
     form = EventAdminForm
-    search_fields = ['event_date', 'client_id__email', 'client_id__company_name']
-    list_display = ['name', 'attendees', 'event_date', 'client_id', 'support_contact']
-    list_filter = ['client_id', 'event_date']
-    readonly_fields = ('date_created', 'date_updated','support_contact')
+    search_fields = ['event_date']
+    list_display = ['name', 'attendees', 'event_date', 'client', 'support_contact']
+    list_filter = ['client', 'event_date']
+    readonly_fields = ('date_created', 'date_updated', 'event_status', 'client')
 
     fieldsets = (
         ('Contract related', {'fields': ('event_status',)}),
+        ('Client related', {'fields': ('client',)}),
         ('Date', {'fields': ('event_date','date_created', 'date_updated')}),
         ('Details', {'fields': ('name','attendees', 'notes')}),
-        ('Contact', {'fields': ('support_contact',)}),
+        ('Employee in charge', {'fields': ('support_contact',)}),
     )
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        if request.user.is_superuser:
+            return qs
+        return qs.filter(support_contact=request.user)
+
+    def get_client_email(self, obj):
+        return obj.client.email
+
+    @admin.display(empty_value='???')
+    def support_contact(self, obj):
+        return obj.support_contact
 
 # ======================================================== RESTRICT PERMISSION
 
