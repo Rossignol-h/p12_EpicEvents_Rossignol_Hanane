@@ -66,9 +66,14 @@ class ClientAdmin(admin.ModelAdmin):
 
     def save_model(self, request, obj, form, change):
         """
-            Save automatically the current sales employee
-            as the sales_contact of this client.
+            If user is sales employee:
+                Save him automatically
+                as the sales_contact of this client.
+            If user is superuser(manager), then the sales_contact
+            is the one he choose.
         """
-
-        obj.sales_contact = request.user
+        if request.user.role == 'sales':
+            obj.sales_contact = request.user
+        elif request.user.is_superuser:
+            obj.sales_contact = obj.sales_contact
         obj.save()

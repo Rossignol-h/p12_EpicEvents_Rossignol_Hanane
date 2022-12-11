@@ -19,13 +19,13 @@ class Client(models.Model):
     phone =  PhoneNumberField(blank=False, unique=True)
     mobile = PhoneNumberField(blank=False, unique=True)
     company_name = models.CharField(blank=False, max_length=50, unique=True)
-    is_prospect = models.BooleanField(blank=False, default=True, help_text='Is it a prospect ?')
+    is_prospect = models.BooleanField(blank=False, default=True)
     date_joined = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)
 
     sales_contact = models.ForeignKey(
         employee_sales,
-        on_delete=models.DO_NOTHING,
+        on_delete=models.SET_NULL,
         limit_choices_to={'role': 'sales'},
         null=True)
 

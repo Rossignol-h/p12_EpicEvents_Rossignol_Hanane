@@ -52,10 +52,7 @@ def create_groups():
         view_client, view_contract,
         change_event, view_event
     ]
-    # if Group.objects.get(name='support').exists():
-    #     pass
 
-    # else:
     support_group = Group(name='support')
     support_group.save()
     support_group.permissions.set(support_permissions)

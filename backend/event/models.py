@@ -38,7 +38,7 @@ class Event(models.Model):
 
     support_contact = models.ForeignKey(
         Employee,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         limit_choices_to={'role': 'support'},
         null=True
     )

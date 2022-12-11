@@ -1,10 +1,11 @@
 from django.contrib.auth.admin import UserAdmin
+from django.contrib.auth.models import Group
 from django.contrib import admin
 from django import forms
 
 from .models import Employee
 
-# ======================================================== CUSTOM MODEL FORM
+# ===================================================================== CUSTOM MODEL FORM
 
 
 class EmployeeAdminForm(forms.ModelForm):
@@ -38,16 +39,6 @@ class EmployeeAdminForm(forms.ModelForm):
             raise forms.ValidationError("Please, email has to end with epicevents.com")
         return self.cleaned_data["email"]
 
-    def save(self, commit=True):
-        """
-            Make sure that the password is hashed
-            before saving an employee.
-        """
-        user = super(EmployeeAdminForm, self).save(commit=False)
-        user.set_password(self.cleaned_data["password1"])
-        if commit:
-            user.save()
-        return user
 
 # ======================================================== CUSTOM USER ADMIN
 
@@ -63,16 +54,27 @@ class EmployeeAdmin(UserAdmin):
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('email', 'password1', 'password2','phone_number' , 'role' ),
+            'fields': ('email', 'password1', 'password2', 'phone_number', 'role' ),
         }),
     )
 
     fieldsets = (
-        (None, {'fields': ('email',)}),
-        ('Contact', {'fields': ('phone_number',)}),
+        ('Contact', {'fields': ('email', 'phone_number',)}),
         ('Security', {'fields': ('password',)}),
-        ('Permissions', {'fields': ('role',)}),
+        ('Permission', {'fields': ('role',)}),
     )
 
     radio_fields = {'role': admin.HORIZONTAL}
     ordering = ('id',)
+
+    def save_model(self, request, obj, form, change):
+        if not change:
+            obj.set_password(obj.password)
+        sales_group = Group.objects.get(name='sales')
+        support_group = Group.objects.get(name='support')
+
+        obj.save()
+        if obj.role == 'sales':
+            obj.groups.add(sales_group)
+        elif obj.role == 'support':
+            obj.groups.add(support_group)
