@@ -6,7 +6,8 @@ from .models import Employee
 class EmployeeSerializer(ModelSerializer):
     class Meta:
         model = Employee
-        fields = ['id', 'email','password', 'phone_number', 'role', 'groups', 'is_staff', 'is_superuser']
+        fields = ['id', 'email', 'password', 'phone_number',
+                  'role', 'groups', 'is_staff', 'is_superuser']
         read_only_fields = ['is_staff', 'is_superuser', 'groups']
 
     def validate(self, data):
@@ -14,9 +15,9 @@ class EmployeeSerializer(ModelSerializer):
             Check that email ends with @epicevents.com
         """
         if not data['email'].endswith('@epicevents.com'):
-            raise serializers.ValidationError("Wrong email format: Please make sure to write @epicevents.com")
+            raise serializers.ValidationError(
+                "Wrong email format: Please make sure to write @epicevents.com")
         return data
-
 
     def create(self, validated_data):
         return Employee.objects.create_user(**validated_data)
@@ -27,6 +28,7 @@ class EmployeeSerializer(ModelSerializer):
         """
         instance.set_password(validated_data['password'])
         instance.email = validated_data.get('email', instance.email)
-        instance.phone_number = validated_data.get('phone_number', instance.phone_number)
+        instance.phone_number = validated_data.get(
+            'phone_number', instance.phone_number)
         instance.save()
         return instance

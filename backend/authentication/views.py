@@ -27,8 +27,7 @@ class EmployeeViewSet(viewsets.ModelViewSet):
     filter_backends = (filters.SearchFilter,)
 
 
-# =========================================================== OVERRIDE DESTROY
-
+# =========================================================== OVERRIDE DELETE EMPLOYEE
 
     def destroy(self, request, *args, **kwargs):
         try:
@@ -46,8 +45,8 @@ class EmployeeViewSet(viewsets.ModelViewSet):
 
             self.perform_destroy(employee_to_delete)
             return Response(
-                        {'message': "This employee is successfully deleted"},
-                        status=status.HTTP_204_NO_CONTENT)
+                {'message': "This employee is successfully deleted"},
+                status=status.HTTP_204_NO_CONTENT)
 
         except ObjectDoesNotExist:
             raise ValidationError("This employee doesn't exist")

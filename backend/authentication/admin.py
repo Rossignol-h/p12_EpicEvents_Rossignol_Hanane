@@ -14,8 +14,9 @@ class EmployeeAdminForm(forms.ModelForm):
         fields, & repeated password.
     """
     password1 = forms.CharField(label='Password', widget=forms.PasswordInput)
-    password2 = forms.CharField(label='Password confirmation', widget=forms.PasswordInput)
-    
+    password2 = forms.CharField(
+        label='Password confirmation', widget=forms.PasswordInput)
+
     class Meta:
         model = Employee
         fields = '__all__'
@@ -36,7 +37,8 @@ class EmployeeAdminForm(forms.ModelForm):
         """
         email = self.cleaned_data["email"]
         if not email.endswith('@epicevents.com'):
-            raise forms.ValidationError("Please, email has to end with epicevents.com")
+            raise forms.ValidationError(
+                "Please, email has to end with epicevents.com")
         return self.cleaned_data["email"]
 
 
@@ -47,6 +49,7 @@ class EmployeeAdminForm(forms.ModelForm):
 class EmployeeAdmin(UserAdmin):
 
     add_form = EmployeeAdminForm
+    empty_value_display = 'None'
     search_fields = ('email',)
     list_display = ['email', 'role', 'phone_number', 'is_superuser']
     list_filter = ['role',]
@@ -54,7 +57,7 @@ class EmployeeAdmin(UserAdmin):
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('email', 'password1', 'password2', 'phone_number', 'role' ),
+            'fields': ('email', 'password1', 'password2', 'phone_number', 'role'),
         }),
     )
 
