@@ -22,7 +22,7 @@ class Contract(models.Model):
 
     client = models.ForeignKey(
         Client,
-        related_name="client_contract",
+        related_name="contract",
         on_delete=models.CASCADE,
         null=True
     )
@@ -55,8 +55,15 @@ class ContractStatus(models.Model):
     """
     contract = models.OneToOneField(
         Contract,
-        on_delete=models.DO_NOTHING,
+        on_delete=models.CASCADE,
         limit_choices_to={'status': 'True'},
         null=False,
         primary_key=True
     )
+
+    def __str__(self):
+        """
+            String for representing this Model object.
+        """
+        return f"Contract: {self.contract_id}  - Sales contact: {self.contract.sales_contact}"
+

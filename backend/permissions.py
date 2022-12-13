@@ -126,15 +126,18 @@ class EventPermission(permissions.BasePermission):
     """
     def has_permission(self, request, view):
         self.message = NOT_SALES_IN_CHARGE
-        current_contract = view.get_contract()
-        if current_contract.exists():
+
+
+        if view.get_contract():
+            current_contract = view.kwargs.get('contract_id')
             sales_of_current_project = Contract.objects.filter(
-                id=current_contract.id,
-                sales_contact=request.user).exists()
+                                            id=current_contract,
+                                            sales_contact=request.user).exists()
+    
             if sales_of_current_project:
                 return True
-            return False
-        raise Http404()
+        return False
+
 
     def has_object_permission(self, request, view, obj):
         self.message = NOT_IN_CHARGE
@@ -143,25 +146,3 @@ class EventPermission(permissions.BasePermission):
             return True
         else:
             return False
-
-# ================================================ CLIENT PERMISSION
-
-class ClientsPermission(permissions.BasePermission):
-    '''
-    management: all permissions
-    sale: safe methods, post , put if user is sale support of the client
-    support: safe methods if user is support _contact for an event of the concern client
-    '''
-    def has_object_permission(self, request, view, obj):
-        if request.method in SAFE_METHODS:
-            if request.user.role == "support":
-                return obj.event_set.filter(support_contact=request.user)
-            else:
-                return request.user.role in ["sales"]
-        if request.method == "POST":
-            return request.user.role in ["sales"]
-        if request.method == "PUT":
-            if request.user.role == "sale":
-                return obj.sales_contact == request.user
-            else:
-                return request.user.is_superuser

@@ -39,6 +39,11 @@ class EmployeeViewSet(viewsets.ModelViewSet):
                     {'message': "You can not delete yourself !"},
                     status=status.HTTP_403_FORBIDDEN)
 
+            if employee_to_delete.id == 1:
+                return Response(
+                    {'message': "You can not delete the first manager !"},
+                    status=status.HTTP_403_FORBIDDEN)
+
             self.perform_destroy(employee_to_delete)
             return Response(
                         {'message': "This employee is successfully deleted"},

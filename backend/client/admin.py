@@ -1,6 +1,5 @@
 from django.contrib import admin
 
-from event.models import Event
 from .models import Client
 
 
@@ -11,7 +10,7 @@ from .models import Client
 class ClientAdmin(admin.ModelAdmin):
 
     search_fields = ('company_name', 'email')
-    list_display = ['company_name', 'email', 'is_prospect','sales_contact']
+    list_display = ['upper_case_name', 'email', 'is_prospect','sales_contact']
     list_filter = ['is_prospect', 'sales_contact']
     readonly_fields = ['date_joined', 'date_updated',]
 
@@ -24,45 +23,25 @@ class ClientAdmin(admin.ModelAdmin):
 
 # ========================================================================
 
-    def get_queryset(self, request):
-        """
-            Make sure to return appropriate queries :
-            if the user is superuser(manager) ==> return all clients
-            if the user role is sales ==> return only clients, that he is in charge of 
-            if the user is support ==> return only clients of events, that he is in charge of
-        """
-
-        queryset = super().get_queryset(request)
-        employee = request.user
-
-        if employee.role == 'sales':
-            return Client.objects.filter(sales_contact=employee)
-            
-        if employee.role == 'support':
-            clients = [e.client.id for e in Event.objects.filter(support_contact=employee)]
-            for client in clients:
-                return Client.objects.filter(id=client)
-
-        elif employee.is_superuser:
-            return Client.objects.all()
-
-        else:
-            return queryset.none()
-
-# ========================================================================
-
     def get_readonly_fields(self, request, obj=None):
         """
             Make sure to avoid a sales employee to change 
             the sales_contact field, by adding it to readonly_fields 
         """
-
         if request.user.role == 'sales':
             return self.readonly_fields + ['sales_contact',]
+
         else:
             return self.readonly_fields
 
-# ========================================================================
+# ======================================================================== CUSOM COMPANY NAME DISPLAY
+
+    @admin.display(description='Name')
+    def upper_case_name(self, obj):
+        return ("%s" % (obj.company_name)).upper()
+
+
+# ======================================================================== OVERRIDE SAVE MODEL
 
     def save_model(self, request, obj, form, change):
         """
@@ -77,3 +56,21 @@ class ClientAdmin(admin.ModelAdmin):
         elif request.user.is_superuser:
             obj.sales_contact = obj.sales_contact
         obj.save()
+
+# ========================================================================
+
+
+    def has_change_permission(self, request, obj=None):
+        """
+            Make sure only a manager or the sales employee 
+            in charge of this client 
+            can update it
+        """
+        if request.user.role == 'sales':
+            if obj is not None and request.user == obj.sales_contact:
+                return True
+            return False
+
+        elif request.user.is_superuser:
+            return True
+        return False

@@ -71,7 +71,7 @@ DB_PORT=5432
 cd backend
 ```
 
-#### Generate the SQlite database :
+#### Migrate your models to your database:
 ```bash
 python manage.py migrate
 ```

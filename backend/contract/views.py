@@ -9,129 +9,59 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import get_object_or_404
 from django.http import Http404
 
-from .serializers import ContractSerializer, ContractStatusSerializer
+from .serializers import ContractSerializer, UpdateContractSerializer, ContractStatusSerializer
 from permissions import ObjectPermission
 from .models import Contract, ContractStatus
 from client.models import Client
 from event.models import Event
+from authentication.models import Employee
 
-
-# =========================================================== READ CONTRACT VIEW
-
-
-class ReadContractsView(viewsets.ReadOnlyModelViewSet):
-    """
-    List all contracts of authenticated employee.
-    """
-    serializer_class = ContractSerializer
-    # queryset = Contract.objects.all()
-    permission_classes = [DjangoModelPermissions]
-    filter_backends = [filters.SearchFilter]
-    search_fields = ['date_created', 'amount', 'client_id__email', 'client_id__company_name' ]
-
-    # ====================================================================== GET CONTRACTS OF AUTHENTICATED EMPLOYEE
-
-
-    def get_queryset(self):
-        """
-            Make sure to return appropriate queries :
-            if the user is superuser(manager) ==> return all contracts
-            if the user role is sales ==> return only contracts, that he is in charge of 
-            if the user is support ==> return only contracts of events, that he is in charge of
-        """
-        employee = self.request.user
-        if employee.role == 'sales':
-            return Contract.objects.filter(sales_contact=employee)
-        elif employee.role == 'support':
-            return Contract.objects.filter(event__support_contact=employee)
-        elif employee.is_superuser:
-            return Contract.objects.all()
-        else:
-            return Contract.objects.none()
 
 # =========================================================== CONTRACT VIEW
 
 
-class ContractView(viewsets.ModelViewSet):
+class ContractViewSet(viewsets.ModelViewSet):
     """
         Add, retrieve, update and delete a contract to the crm.
     """
-    serializer_class = ContractSerializer
-    # queryset = Contract.objects.all()
+    queryset = Contract.objects.all()
     permission_classes = [DjangoModelPermissions, ObjectPermission]
     filter_backends = [filters.SearchFilter]
     search_fields = ['date_created', 'amount', 'client_id__email', 'client_id__company_name' ]
 
-
-    def get_client(self):
-        lookup_url_kwarg = self.kwargs['client_id']
-        return get_object_or_404(Client, pk=lookup_url_kwarg)
-
-
 # ====================================================================== GET CONTRACTS OF AUTHENTICATED EMPLOYEE
 
-
-    def get_queryset(self):
-        employee = self.request.user
-        if employee.role == 'sales':
-            return Contract.objects.filter(sales_contact=employee)
-        elif employee.role == 'support':
-            return Contract.objects.filter(event__support_contact=employee)
-        elif employee.is_superuser:
-            return Contract.objects.all()
+    def get_serializer_class(self):
+        if self.request.method == 'PUT':
+            return UpdateContractSerializer
         else:
-            return Contract.objects.none()
+            return ContractSerializer
 
-# ====================================================================== METHOD FOR ADD SIGNED CONTRACT & CHANGE PROSPECT TO CLIENT
-
-
-    def update_foreignkeys(self, new_contract):
-        """
-        if contract status is true:
-            then add it to contract status table
-            create a new event
-            update the status 'is_prospect' of current client to False
-            because is not a prospect anymore.
-        
-        """
-        if self.request.data['status'] == 'True':
-
-            signed_contract = ContractStatus.objects.filter(contract=new_contract)
-            if signed_contract:
-                pass
-            else: 
-                new_signed_contract = ContractStatus.objects.create(contract=new_contract)
-                Event.objects.create(
-                    event_status=new_signed_contract,
-                    client=self.get_client()
-                )
-            
-            current_client = self.get_client()
-            if current_client:
-                current_client.is_prospect = "False"
-                current_client.save()
-            
-        else:
-            pass
 # ====================================================================== CUSTOM CREATE CONTRACT
 
     def create(self, request, *args, **kwargs):
+        """
+            Make sure that the sales_contact's contract
+            is the one in charge of the client's contract 
+        """
+        
+        employee = request.user
+        if employee.role == 'sales':
+            current_client = request.data['client']
+            in_charge_of_client = Client.objects.filter(id=current_client, sales_contact=employee).first()
 
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        current_client = self.get_client()
-        new_contract = serializer.save(
-                                    client=current_client,
-                                    sales_contact=current_client.sales_contact
-                                    )
-
-        self.update_foreignkeys(new_contract)
-
-        return Response({'new_contract': self.serializer_class(new_contract,
-                            context=self.get_serializer_context()).data,
-                            'message':
-                            f"This new contract is successfully added to the crm."},
-                            status=status.HTTP_201_CREATED)
+            if not in_charge_of_client:
+                response = {'Sorry, You are not in charge of this client'}
+                return Response(response, status=status.HTTP_403_FORBIDDEN)
+                
+            else:
+                serializer = self.get_serializer(data=request.data)
+                serializer.is_valid(raise_exception=True)
+                serializer.save(sales_contact=employee)
+                return Response({'new_contract': serializer.data,
+                                'message':
+                                f"This new contract is successfully added to the crm."},
+                                status=status.HTTP_201_CREATED)
 
 
 # ====================================================================== CUSTOM UPDATE CONTRACT
@@ -141,17 +71,33 @@ class ContractView(viewsets.ModelViewSet):
         """
             if user change status of contract to True (is signed),
             update the client status (he is not a prospect anymore),
-            & add this contract to table "ContractStatus".
+            & add this contract to table "ContractStatus"
+            & create an event.
         """
         current_contract = self.get_object()
         serializer = self.get_serializer(current_contract, data=request.data)
         serializer.is_valid(raise_exception=True)
-
         self.perform_update(serializer)
+        
 
-        self.update_foreignkeys(current_contract)
-    
-        return Response(serializer.data)
+# ================================================================================ IF STATUS CHANGE UPDATE FOREIGN KEYS
+
+        if serializer.data['status'] == True:
+            signed_contract = ContractStatus.objects.filter(contract=current_contract)
+
+            if not signed_contract:
+                ContractStatus.objects.create(contract=current_contract)
+
+                return Response({'new_contract': serializer.data,
+                                    'message':
+                                    f"This contract is successfully updated. Is signed and and ready to create an event"},
+                                    status=status.HTTP_201_CREATED)
+                
+            else:
+                return Response({'new_contract': serializer.data,
+                                        'message':
+                                        f"This contract is successfully updated."},
+                                        status=status.HTTP_201_CREATED)
 
 # ====================================================================== METHOD TO DISPLAY DELETE MESSAGE
 
@@ -173,7 +119,7 @@ class ContractView(viewsets.ModelViewSet):
 
 class ContractStatusViewSet(viewsets.ModelViewSet):
     """
-    Add, retrieve, update and delete a contract status to the crm.
+    Read & retrieve all signed contracts.
     """
     serializer_class = ContractStatusSerializer
     queryset = ContractStatus.objects.all()

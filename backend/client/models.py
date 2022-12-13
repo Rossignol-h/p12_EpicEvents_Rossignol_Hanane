@@ -25,9 +25,11 @@ class Client(models.Model):
 
     sales_contact = models.ForeignKey(
         employee_sales,
-        on_delete=models.SET_NULL,
+        default=1,
+        on_delete=models.SET_DEFAULT,
         limit_choices_to={'role': 'sales'},
-        null=True)
+        blank=False,
+        null=False)
 
     class Meta:
         ordering = ['-is_prospect']

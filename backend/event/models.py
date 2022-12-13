@@ -24,7 +24,7 @@ class Event(models.Model):
 
     event_status = models.ForeignKey(
         ContractStatus,
-        related_name="event_contract",
+        related_name="signedcontract",
         on_delete=models.CASCADE,
         null=True
     )
@@ -38,7 +38,8 @@ class Event(models.Model):
 
     support_contact = models.ForeignKey(
         Employee,
-        on_delete=models.SET_NULL,
+        default=1,
+        on_delete=models.SET_DEFAULT,
         limit_choices_to={'role': 'support'},
         null=True
     )
