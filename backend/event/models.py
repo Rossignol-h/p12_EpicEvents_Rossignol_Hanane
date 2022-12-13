@@ -49,7 +49,7 @@ class Event(models.Model):
         verbose_name = 'event'
         verbose_name_plural = 'events'
 
-    def __str__(self)-> str:
+    def __str__(self):
         """
             String representing this Model object.
         """

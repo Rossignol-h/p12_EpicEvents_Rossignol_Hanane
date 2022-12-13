@@ -26,7 +26,6 @@ class EmployeeViewSet(viewsets.ModelViewSet):
     search_fields = ['email', 'role']
     filter_backends = (filters.SearchFilter,)
 
-
 # =========================================================== OVERRIDE DELETE EMPLOYEE
 
     def destroy(self, request, *args, **kwargs):

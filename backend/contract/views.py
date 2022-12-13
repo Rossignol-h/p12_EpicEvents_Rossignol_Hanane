@@ -5,16 +5,10 @@ from rest_framework.response import Response
 from rest_framework import viewsets, status
 from rest_framework import filters
 
-from django.core.exceptions import ObjectDoesNotExist
-from django.shortcuts import get_object_or_404
-from django.http import Http404
-
 from .serializers import ContractSerializer, UpdateContractSerializer, ContractStatusSerializer
 from permissions import ObjectPermission
 from .models import Contract, ContractStatus
 from client.models import Client
-from event.models import Event
-from authentication.models import Employee
 
 
 # =========================================================== CONTRACT VIEW
@@ -27,7 +21,8 @@ class ContractViewSet(viewsets.ModelViewSet):
     queryset = Contract.objects.all()
     permission_classes = [DjangoModelPermissions, ObjectPermission]
     filter_backends = [filters.SearchFilter]
-    search_fields = ['date_created', 'amount', 'client_id__email', 'client_id__company_name' ]
+    search_fields = ['date_created', 'amount',
+                     'client_id__email', 'client_id__company_name']
 
 # ====================================================================== GET CONTRACTS OF AUTHENTICATED EMPLOYEE
 
@@ -42,30 +37,35 @@ class ContractViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         """
             Make sure that the sales_contact's contract
-            is the one in charge of the client's contract 
+            is the one in charge of the client's contract
         """
-        
+
         employee = request.user
         if employee.role == 'sales':
-            current_client = request.data['client']
-            in_charge_of_client = Client.objects.filter(id=current_client, sales_contact=employee).first()
+            current_client = Client.objects.filter(
+                id=request.data['client']).first()
+
+            if not current_client:
+                response = {"Sorry, this client doesn't exist"}
+                return Response(response, status=status.HTTP_404_NOT_FOUND)
+
+            in_charge_of_client = Client.objects.filter(
+                id=current_client.id, sales_contact=employee).first()
 
             if not in_charge_of_client:
                 response = {'Sorry, You are not in charge of this client'}
                 return Response(response, status=status.HTTP_403_FORBIDDEN)
-                
+
             else:
                 serializer = self.get_serializer(data=request.data)
                 serializer.is_valid(raise_exception=True)
                 serializer.save(sales_contact=employee)
                 return Response({'new_contract': serializer.data,
                                 'message':
-                                f"This new contract is successfully added to the crm."},
+                                 'This new contract is successfully added to the crm.'},
                                 status=status.HTTP_201_CREATED)
 
-
 # ====================================================================== CUSTOM UPDATE CONTRACT
-
 
     def update(self, request, *args, **kwargs):
         """
@@ -78,37 +78,37 @@ class ContractViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(current_contract, data=request.data)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
-        
+
 
 # ================================================================================ IF STATUS CHANGE UPDATE FOREIGN KEYS
 
-        if serializer.data['status'] == True:
-            signed_contract = ContractStatus.objects.filter(contract=current_contract)
+        if serializer.data['status'] is True:
+            signed_contract = ContractStatus.objects.filter(
+                contract=current_contract)
 
             if not signed_contract:
                 ContractStatus.objects.create(contract=current_contract)
 
                 return Response({'new_contract': serializer.data,
-                                    'message':
-                                    f"This contract is successfully updated. Is signed and and ready to create an event"},
-                                    status=status.HTTP_201_CREATED)
-                
-            else:
-                return Response({'new_contract': serializer.data,
-                                        'message':
-                                        f"This contract is successfully updated."},
-                                        status=status.HTTP_201_CREATED)
+                                 'message':
+                                 'This contract is successfully updated. Is signed and and ready to create an event'},
+                                status=status.HTTP_201_CREATED)
+
+        else:
+            return Response({'new_contract': serializer.data,
+                             'message':
+                             'This contract is successfully updated.'},
+                            status=status.HTTP_201_CREATED)
 
 # ====================================================================== METHOD TO DISPLAY DELETE MESSAGE
-
 
     def destroy(self, request, *args, **kwargs):
         try:
             contract_to_delete = Contract.objects.get(id=self.kwargs['pk'])
             self.perform_destroy(contract_to_delete)
             return Response(
-                        {'message': "This contract is successfully deleted"},
-                        status=status.HTTP_204_NO_CONTENT)
+                {'message': "This contract is successfully deleted"},
+                status=status.HTTP_204_NO_CONTENT)
 
         except ObjectDoesNotExist:
             raise ValidationError("This contract doesn't exist")

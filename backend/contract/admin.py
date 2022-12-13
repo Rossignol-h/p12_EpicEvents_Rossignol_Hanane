@@ -8,11 +8,11 @@ from client.models import Client
 
 @admin.register(Contract)
 class ContractAdmin(admin.ModelAdmin):
-    empty_value_display = 'None' # Display None for empty values instead of -
+    empty_value_display = 'None'  # Display None for empty values instead of -
     search_fields = ['client__email', 'client__company_name', 'date_created', 'amount']
     list_display = ['id', 'client', 'sales_contact', 'amount', 'date_created', 'status']
     list_filter = ['client', 'payment_due', 'status']
-    readonly_fields = ['date_created', 'date_updated',]
+    readonly_fields = ['date_created', 'date_updated', ]
 
     # set display of form to add contract:
     fieldsets = (
@@ -23,9 +23,7 @@ class ContractAdmin(admin.ModelAdmin):
         ('This contract is signed ?', {'fields': ('status',)}),
     )
 
-
 # ========================================================================
-
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         """
@@ -35,7 +33,7 @@ class ContractAdmin(admin.ModelAdmin):
             if he is superuser (manager):
                 return all clients.
         """
-        
+
         if request.user.role == 'sales':
             if db_field.name == "client":
                 kwargs["queryset"] = Client.objects.filter(sales_contact=request.user)
@@ -45,28 +43,26 @@ class ContractAdmin(admin.ModelAdmin):
                 kwargs["queryset"] = Client.objects.all()
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
-
 # ========================================================================
 
     def get_readonly_fields(self, request, obj=None):
         """
             When updating contract :
-                Make sure to avoid a sales employee to change 
-                the sales_contact field, and client 
-                by adding it to readonly_fields. 
+                Make sure to avoid a sales employee to change
+                the sales_contact field, and client
+                by adding it to readonly_fields.
         """
         # 'change' form
         if obj is not None and request.user.role == 'sales':
             return self.readonly_fields + ['sales_contact', 'client']
         # 'add' form
         if obj is None and request.user.role == 'sales':
-            return self.readonly_fields + ['sales_contact',]
+            return self.readonly_fields + ['sales_contact', ]
 
         else:
             return self.readonly_fields
 
 # ========================================================================
-
 
     def save_model(self, request, obj, form, change):
         """
@@ -78,7 +74,7 @@ class ContractAdmin(admin.ModelAdmin):
         """
         obj.sales_contact = obj.client.sales_contact
         obj.save()
-        if obj.status == True:
+        if obj.status is True:
             signed_contract = ContractStatus.objects.filter(contract=obj)
             if not signed_contract:
                 ContractStatus.objects.create(contract=obj)
@@ -87,14 +83,12 @@ class ContractAdmin(admin.ModelAdmin):
                 obj.client.is_prospect = "False"
                 obj.client.save()
 
-
 # ========================================================================
-
 
     def has_change_permission(self, request, obj=None):
         """
-            Make sure only a manager or the sales employee 
-            in charge of this client 
+            Make sure only a manager or the sales employee
+            in charge of this client
             can update it
         """
         if request.user.role == 'sales':
@@ -115,12 +109,11 @@ class ContractStatusAdmin(admin.ModelAdmin):
     list_display = ['contract']
     list_filter = ['contract']
 
-
     def get_queryset(self, request):
         """
             Make sure to return appropriate queries :
             if the user is superuser(manager) ==> return all signed contracts
-            if the user role is sales ==> return only signed contracts, that he is in charge of 
+            if the user role is sales ==> return only signed contracts, that he is in charge of
             if the user is support ==> return nothing
         """
         queryset = super().get_queryset(request)

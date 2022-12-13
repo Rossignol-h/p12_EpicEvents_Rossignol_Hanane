@@ -23,11 +23,9 @@ class ClientViewSet(viewsets.ModelViewSet):
     queryset = Client.objects.all()
     permission_classes = [DjangoModelPermissions, ObjectPermission]
     filter_backends = [filters.SearchFilter]
-    search_fields = ['company_name','email']
-
+    search_fields = ['company_name', 'email']
 
 # ====================================================================== DISABLE LIST ACTION FOR THIS VIEW
-
 
     def create(self, request, *args, **kwargs):
         """
@@ -54,14 +52,12 @@ class ClientViewSet(viewsets.ModelViewSet):
             new_client = serializer.save(sales_contact=employee)
 
         return Response({'new_client': self.serializer_class(new_client,
-                            context=self.get_serializer_context()).data,
-                            'message':
-                            f"This new client is successfully added to the crm."},
-                            status=status.HTTP_201_CREATED)
-
+                                                             context=self.get_serializer_context()).data,
+                         'message':
+                         'This new client is successfully added to the crm.'},
+                        status=status.HTTP_201_CREATED)
 
 # ====================================================================== METHOD TO DISPLAY DELETE MESSAGE
-
 
     def destroy(self, request, *args, **kwargs):
         """
@@ -71,8 +67,8 @@ class ClientViewSet(viewsets.ModelViewSet):
             client_to_delete = Client.objects.get(id=self.kwargs['pk'])
             self.perform_destroy(client_to_delete)
             return Response(
-                        {'message': "This client is successfully deleted"},
-                        status=status.HTTP_204_NO_CONTENT)
+                {'message': "This client is successfully deleted"},
+                status=status.HTTP_204_NO_CONTENT)
 
         except ObjectDoesNotExist:
             raise ValidationError("This client doesn't exist")

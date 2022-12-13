@@ -31,8 +31,8 @@ class EmployeeAdminForm(forms.ModelForm):
 
     def clean_email(self):
         """
-            Make sure that the email address 
-            ends with epicevents.com, 
+            Make sure that the email address
+            ends with epicevents.com,
             for avoiding enter personnal employee's email.
         """
         email = self.cleaned_data["email"]
@@ -52,7 +52,7 @@ class EmployeeAdmin(UserAdmin):
     empty_value_display = 'None'
     search_fields = ('email',)
     list_display = ['email', 'role', 'phone_number', 'is_superuser']
-    list_filter = ['role',]
+    list_filter = ['role', ]
 
     add_fieldsets = (
         (None, {

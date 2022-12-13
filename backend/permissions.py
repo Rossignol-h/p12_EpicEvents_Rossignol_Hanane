@@ -1,7 +1,7 @@
 from django.contrib.auth.models import Group, Permission
 from rest_framework import permissions
 
-from contract.models import Contract, ContractStatus
+from contract.models import Contract
 
 
 # ====================================== CREATE GROUPS PERMISSIONS
@@ -47,7 +47,6 @@ def create_groups():
 
 # =============================================== SUPPORT PERMISSIONS
 
-
     support_permissions = [
         view_client, view_contract,
         change_event, view_event
@@ -62,8 +61,8 @@ def create_groups():
 
 def add_to_group(new_employee):
     """
-        When an employee is created, 
-        this function is called 
+        When an employee is created,
+        this function is called
         for adding him to the corresponding group.
     """
 
@@ -77,6 +76,7 @@ def add_to_group(new_employee):
 
 # ============================================ ERROR MESSAGES
 
+
 NOT_ALLOWED = "You are not a manager !"
 NOT_IN_CHARGE = "You are not in charge of this !"
 NOT_SALES_IN_CHARGE = "You can't create this event, beacause you're not in charge of this contract !"
@@ -86,9 +86,9 @@ NOT_SALES_IN_CHARGE = "You can't create this event, beacause you're not in charg
 
 class EmployeePermission(permissions.BasePermission):
     """
-        Check if the connected user is manager. 
+        Check if the connected user is manager.
     """
-    
+
     def has_permission(self, request, view):
         self.message = NOT_ALLOWED
         if request.user.is_superuser:
@@ -99,7 +99,7 @@ class EmployeePermission(permissions.BasePermission):
 
 
 class ObjectPermission(permissions.BasePermission):
-    """ 
+    """
         Check if the connected user
         is the main contact in charge of this contract or client;
     """
@@ -107,7 +107,7 @@ class ObjectPermission(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         self.message = NOT_IN_CHARGE
 
-        if view.action in ['list','retrieve','update'] and request.user == obj.sales_contact:
+        if view.action in ['list', 'retrieve', 'update'] and request.user == obj.sales_contact:
             return True
 
         elif request.user.is_superuser:
@@ -116,33 +116,33 @@ class ObjectPermission(permissions.BasePermission):
         else:
             return False
 
+
 # ============================ PERMISSION FOR EVENTS
-from django.http import Http404
+
 
 class EventPermission(permissions.BasePermission):
-    """ 
+    """
         Check if the connected user
         is the main contact in charge of this event;
     """
+
     def has_permission(self, request, view):
         self.message = NOT_SALES_IN_CHARGE
-
 
         if view.get_contract():
             current_contract = view.kwargs.get('contract_id')
             sales_of_current_project = Contract.objects.filter(
-                                            id=current_contract,
-                                            sales_contact=request.user).exists()
-    
+                id=current_contract,
+                sales_contact=request.user).exists()
+
             if sales_of_current_project:
                 return True
         return False
 
-
     def has_object_permission(self, request, view, obj):
         self.message = NOT_IN_CHARGE
 
-        if view.action in ['retrieve','update'] and (request.user == obj.support_contact):
+        if view.action in ['retrieve', 'update'] and (request.user == obj.support_contact):
             return True
         else:
             return False

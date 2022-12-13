@@ -10,12 +10,12 @@ from .models import Client
 class ClientAdmin(admin.ModelAdmin):
 
     search_fields = ('company_name', 'email')
-    list_display = ['upper_case_name', 'email', 'is_prospect','sales_contact']
+    list_display = ['upper_case_name', 'email', 'is_prospect', 'sales_contact']
     list_filter = ['is_prospect', 'sales_contact']
-    readonly_fields = ['date_joined', 'date_updated',]
+    readonly_fields = ['date_joined', 'date_updated', ]
 
     fieldsets = (
-        ('Identity',{'fields': ('company_name', 'first_name', 'last_name')}),
+        ('Identity', {'fields': ('company_name', 'first_name', 'last_name')}),
         ('Contact', {'fields': ('email', 'phone', 'mobile')}),
         ('Employee in charge', {'fields': ('sales_contact',)}),
         ('Is he/she a prospect?', {'fields': ('is_prospect',)}),
@@ -25,11 +25,11 @@ class ClientAdmin(admin.ModelAdmin):
 
     def get_readonly_fields(self, request, obj=None):
         """
-            Make sure to avoid a sales employee to change 
-            the sales_contact field, by adding it to readonly_fields 
+            Make sure to avoid a sales employee to change
+            the sales_contact field, by adding it to readonly_fields
         """
         if request.user.role == 'sales':
-            return self.readonly_fields + ['sales_contact',]
+            return self.readonly_fields + ['sales_contact', ]
 
         else:
             return self.readonly_fields
@@ -39,7 +39,6 @@ class ClientAdmin(admin.ModelAdmin):
     @admin.display(description='Name')
     def upper_case_name(self, obj):
         return ("%s" % (obj.company_name)).upper()
-
 
 # ======================================================================== OVERRIDE SAVE MODEL
 
@@ -59,11 +58,10 @@ class ClientAdmin(admin.ModelAdmin):
 
 # ========================================================================
 
-
     def has_change_permission(self, request, obj=None):
         """
-            Make sure only a manager or the sales employee 
-            in charge of this client 
+            Make sure only a manager or the sales employee
+            in charge of this client
             can update it
         """
         if request.user.role == 'sales':

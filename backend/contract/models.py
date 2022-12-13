@@ -11,7 +11,7 @@ employee_sales = settings.AUTH_USER_MODEL
 
 class Contract(models.Model):
     """
-        Model representing a contract 
+        Model representing a contract
         create by a sales employee.
     """
     amount = models.FloatField(blank=True, null=True)
@@ -50,7 +50,7 @@ class Contract(models.Model):
 
 class ContractStatus(models.Model):
     """
-        Model representing a signed contract, 
+        Model representing a signed contract,
         then an event can be create.
     """
     contract = models.OneToOneField(
@@ -66,4 +66,3 @@ class ContractStatus(models.Model):
             String for representing this Model object.
         """
         return f"Contract: {self.contract_id}  - Sales contact: {self.contract.sales_contact}"
-

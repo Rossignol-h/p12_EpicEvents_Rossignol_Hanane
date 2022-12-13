@@ -10,8 +10,8 @@ class ContractSerializer(ModelSerializer):
 
     class Meta:
         model = Contract
-        fields = ('id', 'amount', 'payment_due', 'status', 'date_created', 'date_updated', 'client', 'sales_contact', ) 
-        read_only_fields = ('id', 'status', 'date_created', 'date_updated',) 
+        fields = ('id', 'amount', 'payment_due', 'status', 'date_created', 'date_updated', 'client', 'sales_contact', )
+        read_only_fields = ('id', 'status', 'date_created', 'date_updated',)
 
 # ======================================================================== SERIALIZER FOR UPDATE A CONTRACT
 
@@ -22,7 +22,7 @@ class UpdateContractSerializer(ModelSerializer):
     class Meta:
         model = Contract
         fields = ('id', 'amount', 'payment_due', 'status', 'date_created', 'date_updated', 'client', 'sales_contact', )
-        read_only_fields = ('id', 'client', 'sales_contact', 'date_created', 'date_updated',) 
+        read_only_fields = ('id', 'client', 'sales_contact', 'date_created', 'date_updated',)
 
 # ======================================================================== SERIALIZER FOR ALL SIGNED CONTRACTS
 

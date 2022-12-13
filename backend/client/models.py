@@ -14,9 +14,9 @@ class Client(models.Model):
     """
 
     first_name = models.CharField(max_length=20)
-    last_name =  models.CharField(max_length=20)
-    email =  models.EmailField(max_length=100, unique=True)
-    phone =  PhoneNumberField(blank=False, unique=True)
+    last_name = models.CharField(max_length=20)
+    email = models.EmailField(max_length=100, unique=True)
+    phone = PhoneNumberField(blank=False, unique=True)
     mobile = PhoneNumberField(blank=False, unique=True)
     company_name = models.CharField(blank=False, max_length=50, unique=True)
     is_prospect = models.BooleanField(blank=False, default=True)

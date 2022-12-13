@@ -1,5 +1,5 @@
 from datetime import timedelta
-from decouple import config, Csv
+from decouple import config
 from pathlib import Path
 import os
 
