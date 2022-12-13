@@ -48,6 +48,8 @@ class EventViewSet(viewsets.ModelViewSet):
             return AllEventSerializer
         elif self.request.method == 'PUT' and self.request.user.role == 'sales':
             return PartialEventSerializer
+        else:
+            return PartialEventSerializer
 
 # ===================================================================
 
@@ -69,10 +71,10 @@ class EventViewSet(viewsets.ModelViewSet):
                     event_status=current_contract
                 )
 
-                return Response({
-                    'New event': EventSerializer(new_event, context=self.get_serializer_context()).data,
-                    'message': 'this event is successfully added to the crm'},
-                    status=status.HTTP_201_CREATED)
+                return Response({'new_event': serializer.data,
+                                'message':
+                                 'This new event is successfully added to the crm.'},
+                                status=status.HTTP_201_CREATED)
 
         except ObjectDoesNotExist:
             raise ValidationError("This event doesn't exist")

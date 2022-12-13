@@ -15,7 +15,7 @@ class Event(models.Model):
     """
         Model representing an event.
     """
-    name = models.CharField(max_length=50, blank=False, null=True)
+    name = models.CharField(max_length=50, blank=False, null=False, unique=True)
     attendees = models.PositiveIntegerField(blank=True, null=True)
     notes = models.TextField(max_length=1000, blank=True, null=True)
     event_date = models.DateField(blank=True, null=True)
@@ -48,6 +48,7 @@ class Event(models.Model):
         ordering = ['-date_updated']
         verbose_name = 'event'
         verbose_name_plural = 'events'
+        constraints = [models.UniqueConstraint(fields=['event_status', 'name'], name="unique_event")]
 
     def __str__(self):
         """
