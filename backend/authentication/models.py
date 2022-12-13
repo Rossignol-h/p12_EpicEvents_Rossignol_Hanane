@@ -15,6 +15,7 @@ class CustomUserManager(BaseUserManager):
         Custom user model manager where email is the unique identifiers
         for authentication instead of usernames.
     """
+
     def create_user(self, email, password, **extra_fields):
         """
             Create and save a User with the given email and password.
@@ -30,10 +31,10 @@ class CustomUserManager(BaseUserManager):
         """
             Create and save a SuperUser with the given email and password.
         """
-        if Group.objects.get(name='support') and Group.objects.get(name='sales'):
-            pass
-        else:
+        if not Group.objects.filter(name='support'):
             create_groups()
+        else:
+            pass
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
         extra_fields.setdefault('is_active', True)
@@ -54,12 +55,13 @@ class Employee(AbstractUser):
         Model representing an employee.
     """
 
-    ROLES_CHOICES = [('sales', 'sales'),('support', 'support')]
+    ROLES_CHOICES = [('sales', 'sales'), ('support', 'support')]
 
     username = None
     email = models.EmailField(blank=False, unique=True)
     phone_number = PhoneNumberField(blank=False, null=True, unique=True)
-    role = models.CharField(blank=False, null= False, max_length=10, choices=ROLES_CHOICES)
+    role = models.CharField(blank=False, null=False,
+                            max_length=10, choices=ROLES_CHOICES)
     is_staff = models.BooleanField(default=True, editable=False)
     is_superuser = models.BooleanField(default=False, editable=False)
 
@@ -68,7 +70,7 @@ class Employee(AbstractUser):
 
     objects = CustomUserManager()
 
-    def __str__(self)-> str:
+    def __str__(self) -> str:
         """
             String representing this Model object.
         """
