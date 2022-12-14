@@ -15,7 +15,7 @@ class EventAdmin(admin.ModelAdmin):
     '''
     empty_value_display = 'will be automatically added'
     search_fields = ['event_date']
-    list_display = ['name', 'attendees', 'event_date', 'client', 'support_contact']
+    list_display = ['upper_case_name', 'attendees', 'event_date', 'client', 'support_contact']
     list_filter = ['client', 'event_date']
     readonly_fields = ('date_created', 'date_updated', 'client')
 
@@ -86,12 +86,18 @@ class EventAdmin(admin.ModelAdmin):
         else:
             return False
 
+# ======================================================================== CUSOM EVENT NAME DISPLAY
+
+    @admin.display(description='client')
+    def upper_case_name(self, obj):
+        return ("%s" % (obj.name)).upper()
+
 # ========================================================================
 
     def save_model(self, request, obj, form, change):
         """
             Add automatically the client of this signed contract
-            as client of this event. 
+            as client of this event.
         """
         client = Client.objects.filter(id=obj.event_status.contract.client.id).first()
         obj.client = client

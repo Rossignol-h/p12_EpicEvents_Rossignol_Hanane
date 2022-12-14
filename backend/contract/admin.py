@@ -10,7 +10,7 @@ from client.models import Client
 class ContractAdmin(admin.ModelAdmin):
     empty_value_display = 'None'  # Display None for empty values instead of -
     search_fields = ['client__email', 'client__company_name', 'date_created', 'amount']
-    list_display = ['id', 'client', 'sales_contact', 'amount', 'date_created', 'status']
+    list_display = ['id', 'upper_case_name', 'sales_contact', 'amount', 'date_created', 'status']
     list_filter = ['client', 'payment_due', 'status']
     readonly_fields = ['date_created', 'date_updated', ]
 
@@ -22,6 +22,12 @@ class ContractAdmin(admin.ModelAdmin):
         ('Who is in charge of this contract? ', {'fields': ('sales_contact',)}),
         ('This contract is signed ?', {'fields': ('status',)}),
     )
+
+# ======================================================================== CUSOM CLIENT NAME DISPLAY
+
+    @admin.display(description='client')
+    def upper_case_name(self, obj):
+        return ("%s" % (obj.client)).upper()
 
 # ========================================================================
 
@@ -73,15 +79,15 @@ class ContractAdmin(admin.ModelAdmin):
                 update status' client (is not a propect anymore).
         """
         obj.sales_contact = obj.client.sales_contact
+        if obj.client:
+            obj.client.is_prospect = "False"
+            obj.client.save()
         obj.save()
+
         if obj.status is True:
             signed_contract = ContractStatus.objects.filter(contract=obj)
             if not signed_contract:
                 ContractStatus.objects.create(contract=obj)
-
-            if obj.client:
-                obj.client.is_prospect = "False"
-                obj.client.save()
 
 # ========================================================================
 

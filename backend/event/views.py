@@ -47,7 +47,7 @@ class EventViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.request.method == 'PUT' and self.request.user.is_superuser:
             return AllEventSerializer
-        
+
         return PartialEventSerializer
 
 # ===================================================================
@@ -65,7 +65,7 @@ class EventViewSet(viewsets.ModelViewSet):
             else:
                 current_contract = self.get_contract()
                 serializer.is_valid(raise_exception=True)
-                new_event = serializer.save(
+                serializer.save(
                     client=current_contract.contract.client,
                     event_status=current_contract
                 )
@@ -77,7 +77,6 @@ class EventViewSet(viewsets.ModelViewSet):
 
         except ObjectDoesNotExist:
             raise ValidationError("This contract doesn't exist")
-
 
 # ====================================================================== CUSTOM UPDATE EVENT
 
@@ -92,10 +91,10 @@ class EventViewSet(viewsets.ModelViewSet):
         employee = request.user
         if employee.is_superuser:
             current_support = Employee.objects.filter(id=request.data['support_contact']).first()
-        
+
             if not current_support:
-                    response = {"Sorry, this support employee doesn't exist"}
-                    return Response(response, status=status.HTTP_404_NOT_FOUND)
+                response = {"Sorry, this support employee doesn't exist"}
+                return Response(response, status=status.HTTP_404_NOT_FOUND)
 
             else:
                 current_event.support_contact = current_support
@@ -105,7 +104,8 @@ class EventViewSet(viewsets.ModelViewSet):
                 self.perform_update(serializer)
                 return Response({'updated event': serializer.data,
                                 'message':
-                                f'This event is successfully updated, & the support contact is assigned to {current_support} '},
+                                    f"""This event is successfully updated,
+                                & the support contact is assigned to {current_support}"""},
                                 status=status.HTTP_201_CREATED)
 
         else:
@@ -113,10 +113,9 @@ class EventViewSet(viewsets.ModelViewSet):
             serializer.is_valid(raise_exception=True)
             self.perform_update(serializer)
             return Response({'updated event': serializer.data,
-                                'message':
+                            'message':
                                 'This event is successfully updated.'},
-                                status=status.HTTP_201_CREATED)
-
+                            status=status.HTTP_201_CREATED)
 
 # ===================================================================
 
