@@ -5,7 +5,7 @@ from .models import Client
 
 class ClientSerializer(ModelSerializer):
     sales_contact = serializers.ReadOnlyField(
-        source='sales_contact.email', read_only=True)
+        source='sales_contact.email', read_only=False)
 
     class Meta:
         model = Client

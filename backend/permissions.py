@@ -79,7 +79,7 @@ def add_to_group(new_employee):
 
 NOT_ALLOWED = "You are not a manager !"
 NOT_IN_CHARGE = "You are not in charge of this !"
-NOT_SALES_IN_CHARGE = "You can't create this event, beacause you're not in charge of this contract !"
+NOT_SALES_IN_CHARGE = "You can't create this event, because you're not in charge of this contract !"
 
 # ============================================ PERMISSION FOR EMPLOYEES
 
@@ -126,18 +126,18 @@ class EventPermission(permissions.BasePermission):
         is the main contact in charge of this event;
     """
 
-    def has_permission(self, request, view):
-        self.message = NOT_SALES_IN_CHARGE
+    # def has_permission(self, request, view):
+    #     self.message = NOT_SALES_IN_CHARGE
 
-        if view.get_contract():
-            current_contract = view.kwargs.get('contract_id')
-            sales_of_current_project = Contract.objects.filter(
-                id=current_contract,
-                sales_contact=request.user).exists()
+    #     if view.get_contract():
+    #         current_contract = view.kwargs.get('contract_id')
+    #         sales_of_current_project = Contract.objects.filter(
+    #             id=current_contract,
+    #             sales_contact=request.user).exists()
 
-            if sales_of_current_project:
-                return True
-        return False
+    #         if sales_of_current_project:
+    #             return True
+    #     return False
 
     def has_object_permission(self, request, view, obj):
         self.message = NOT_IN_CHARGE

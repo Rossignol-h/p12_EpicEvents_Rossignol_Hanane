@@ -9,6 +9,8 @@ from django.core.exceptions import ObjectDoesNotExist
 from contract.models import ContractStatus
 from .serializers import PartialEventSerializer, AllEventSerializer
 from permissions import EventPermission
+
+from authentication.models import Employee
 from .models import Event
 
 
@@ -23,7 +25,7 @@ class ReadEventViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = AllEventSerializer
     queryset = Event.objects.all()
     permission_classes = [DjangoModelPermissions]
-    search_fields = ['event_date', 'client_id', 'client_id.email']
+    search_fields = ['event_date', 'client_id__email', 'client_id__company_name']
     filter_backends = (filters.SearchFilter,)
 
 
@@ -38,7 +40,7 @@ class EventViewSet(viewsets.ModelViewSet):
     serializer_class = AllEventSerializer
     queryset = Event.objects.all()
     permission_classes = [DjangoModelPermissions, EventPermission]
-    search_fields = ['event_date', 'client_id', 'client_id.email']
+    search_fields = ['event_date', 'client_id__email', 'client_id__company_name']
     filter_backends = (filters.SearchFilter,)
 
 # ====================================================================== GET CONTRACTS OF AUTHENTICATED EMPLOYEE
@@ -46,22 +48,20 @@ class EventViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.request.method == 'PUT' and self.request.user.is_superuser:
             return AllEventSerializer
-        elif self.request.method == 'PUT' and self.request.user.role == 'sales':
-            return PartialEventSerializer
         else:
             return PartialEventSerializer
 
 # ===================================================================
 
     def get_contract(self, *args, **kwargs):
-        return ContractStatus.objects.get(contract=self.kwargs['contract_id'])
+        return ContractStatus.objects.filter(contract=self.kwargs['contract_id']).first()
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
 
         try:
             if not self.get_contract():
-                raise ValidationError("this contract doesn't exist")
+                raise ObjectDoesNotExist()
 
             else:
                 current_contract = self.get_contract()
@@ -77,7 +77,39 @@ class EventViewSet(viewsets.ModelViewSet):
                                 status=status.HTTP_201_CREATED)
 
         except ObjectDoesNotExist:
-            raise ValidationError("This event doesn't exist")
+            raise ValidationError("This contract doesn't exist")
+
+
+# ====================================================================== CUSTOM UPDATE EVENT
+
+    def update(self, request, *args, **kwargs):
+        """
+            Support employee in charge of this event can update it,
+            Manager can add the main support contact of this event.
+        """
+
+# ================================================================================ IF MANAGER ADD A SUPPORT CONTACT
+
+        employee = request.user
+        if employee.is_superuser:
+            current_support = Employee.objects.filter(
+                id=request.data['support_contact']).first()
+
+        if not current_support:
+            response = {"Sorry, this support employee doesn't exist"}
+            return Response(response, status=status.HTTP_404_NOT_FOUND)
+
+        else:
+            current_event = self.get_object()
+            current_event.support_contact = current_support
+            current_event.save()
+            serializer = self.get_serializer(current_event, data=request.data)
+            serializer.is_valid(raise_exception=True)
+            self.perform_update(serializer)
+            return Response({'updated event': serializer.data,
+                             'message':
+                             'This event is successfully updated.'},
+                            status=status.HTTP_201_CREATED)
 
 # ===================================================================
 

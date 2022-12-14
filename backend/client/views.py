@@ -8,6 +8,8 @@ from django.conf import settings
 
 from .serializers import ClientSerializer
 from permissions import ObjectPermission
+
+from authentication.models import Employee
 from .models import Client
 
 User = settings.AUTH_USER_MODEL
@@ -38,14 +40,21 @@ class ClientViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(data=request.data)
 
         if employee.is_superuser:
+
             try:
-                if request.data['sales_contact'] is None:
-                    raise Exception()
-                else:
-                    serializer.is_valid(raise_exception=True)
-                    new_client = serializer.save()
-            except Exception:
+                request.data['sales_contact']
+            except KeyError:
                 raise ValidationError("As manager you have to specifiy a sales_contact")
+
+            if request.user.is_superuser:
+                current_sales_contact = Employee.objects.filter(id=request.data['sales_contact']).first()
+
+            if not current_sales_contact:
+                response = {"Sorry, this sales employee doesn't exist"}
+                return Response(response, status=status.HTTP_404_NOT_FOUND)
+            else:
+                serializer.is_valid(raise_exception=True)
+                new_client = serializer.save(sales_contact=current_sales_contact)
 
         elif employee.role == 'sales':
             serializer.is_valid(raise_exception=True)
