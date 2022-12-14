@@ -60,6 +60,8 @@ class ContractStatus(models.Model):
         null=False,
         primary_key=True
     )
+    class Meta:
+        ordering = ['-contract__id']
 
     def __str__(self):
         """

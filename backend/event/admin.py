@@ -76,19 +76,20 @@ class EventAdmin(admin.ModelAdmin):
             or manager
             can update it.
         """
-        if request.user.role == 'support':
-            if obj is not None and obj.support_contact == request.user:
+        employee = request.user
+        if employee.role == 'support':
+            if obj is not None and obj.support_contact == employee:
                 return True
-        elif request.user.is_superuser:
+        elif employee.is_superuser:
             return True
         else:
             return False
 
 # ========================================================================
 
-    def save_model(self, request, obj, form, change):
-        """
+    # def save_model(self, request, obj, form, change):
+    #     """
 
-        """
-        obj.client = obj.event_status_contract.client
-        obj.save()
+    #     """
+    #     obj.client = obj.event_status_contract.client
+    #     obj.save()
