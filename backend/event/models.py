@@ -24,7 +24,7 @@ class Event(models.Model):
 
     event_status = models.ForeignKey(
         ContractStatus,
-        related_name="signedcontract",
+        related_name="event",
         on_delete=models.CASCADE,
         null=True
     )

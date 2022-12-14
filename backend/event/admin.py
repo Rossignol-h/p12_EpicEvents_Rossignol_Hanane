@@ -2,6 +2,7 @@ from django.contrib import admin
 
 from .models import Event
 from contract.models import ContractStatus
+from client.models import Client
 
 
 # ======================================================== CUSTOM ADMIN PAGE
@@ -49,11 +50,11 @@ class EventAdmin(admin.ModelAdmin):
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         """
-            Override the queryset of clients in form :
+            Override the queryset of event status in form :
             if user is sales employee:
-                Make sure queryset contains only clients who is in charge of.
+                Make sure queryset contains only signed contracts who is in charge of.
             if he is superuser (manager):
-                return all clients.
+                return all signed contracts.
         """
 
         if request.user.role == 'sales':
@@ -87,9 +88,11 @@ class EventAdmin(admin.ModelAdmin):
 
 # ========================================================================
 
-    # def save_model(self, request, obj, form, change):
-    #     """
-
-    #     """
-    #     obj.client = obj.event_status_contract.client
-    #     obj.save()
+    def save_model(self, request, obj, form, change):
+        """
+            Add automatically the client of this signed contract
+            as client of this event. 
+        """
+        client = Client.objects.filter(id=obj.event_status.contract.client.id).first()
+        obj.client = client
+        obj.save()

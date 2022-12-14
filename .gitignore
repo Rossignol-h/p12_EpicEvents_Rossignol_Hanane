@@ -3,6 +3,7 @@ include
 lib
 .env
 settings.ini
+
 __pycache__
 env/
 .pytest_cache/

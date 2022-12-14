@@ -37,7 +37,6 @@ class EventViewSet(viewsets.ModelViewSet):
     Add, retrieve, update and delete an event to the crm.
     """
 
-    serializer_class = AllEventSerializer
     queryset = Event.objects.all()
     permission_classes = [DjangoModelPermissions, EventPermission]
     search_fields = ['event_date', 'client_id__email', 'client_id__company_name']
@@ -48,8 +47,8 @@ class EventViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.request.method == 'PUT' and self.request.user.is_superuser:
             return AllEventSerializer
-        else:
-            return PartialEventSerializer
+        
+        return PartialEventSerializer
 
 # ===================================================================
 
@@ -89,27 +88,35 @@ class EventViewSet(viewsets.ModelViewSet):
         """
 
 # ================================================================================ IF MANAGER ADD A SUPPORT CONTACT
-
+        current_event = self.get_object()
         employee = request.user
         if employee.is_superuser:
-            current_support = Employee.objects.filter(
-                id=request.data['support_contact']).first()
+            current_support = Employee.objects.filter(id=request.data['support_contact']).first()
+        
+            if not current_support:
+                    response = {"Sorry, this support employee doesn't exist"}
+                    return Response(response, status=status.HTTP_404_NOT_FOUND)
 
-        if not current_support:
-            response = {"Sorry, this support employee doesn't exist"}
-            return Response(response, status=status.HTTP_404_NOT_FOUND)
+            else:
+                current_event.support_contact = current_support
+                current_event.save()
+                serializer = self.get_serializer(current_event, data=request.data)
+                serializer.is_valid(raise_exception=True)
+                self.perform_update(serializer)
+                return Response({'updated event': serializer.data,
+                                'message':
+                                f'This event is successfully updated, & the support contact is assigned to {current_support} '},
+                                status=status.HTTP_201_CREATED)
 
         else:
-            current_event = self.get_object()
-            current_event.support_contact = current_support
-            current_event.save()
             serializer = self.get_serializer(current_event, data=request.data)
             serializer.is_valid(raise_exception=True)
             self.perform_update(serializer)
             return Response({'updated event': serializer.data,
-                             'message':
-                             'This event is successfully updated.'},
-                            status=status.HTTP_201_CREATED)
+                                'message':
+                                'This event is successfully updated.'},
+                                status=status.HTTP_201_CREATED)
+
 
 # ===================================================================
 
