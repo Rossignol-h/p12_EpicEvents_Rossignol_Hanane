@@ -133,3 +133,19 @@ class ContractStatusAdmin(admin.ModelAdmin):
 
         else:
             return queryset.none()
+
+# ========================================================================
+
+    def get_readonly_fields(self, request, obj=None):
+        """
+            When updating contractstatus :
+                Make sure to avoid a sales employee to change
+                the sales_contact field, and client
+                by adding it to readonly_fields.
+        """
+        # 'change' form
+        if obj is not None and request.user.role == 'sales':
+            return self.readonly_fields + ('contract', )
+
+        else:
+            return self.readonly_fields
