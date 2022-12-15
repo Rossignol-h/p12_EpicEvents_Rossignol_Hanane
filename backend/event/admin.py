@@ -38,7 +38,7 @@ class EventAdmin(admin.ModelAdmin):
         """
         # 'change' form
         if obj is not None and request.user.role == 'sales':
-            return self.readonly_fields + ['sales_contact', 'client', ]
+            return self.readonly_fields + ('sales_contact', 'client', )
         # 'add' form
         if obj is None and request.user.role == 'sales':
             return self.readonly_fields + ('support_contact',)

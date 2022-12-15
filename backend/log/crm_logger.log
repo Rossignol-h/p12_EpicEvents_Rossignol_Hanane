@@ -1,0 +1,30 @@
+Internal Server Error: /admin/event/event/7/change/
+Traceback (most recent call last):
+  File "C:\Users\ross\Desktop\OPENCLASS\Projets\PROJET12\last p12\p12_EpicEvents_Rossignol_Hanane\env\lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\ross\Desktop\OPENCLASS\Projets\PROJET12\last p12\p12_EpicEvents_Rossignol_Hanane\env\lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\ross\Desktop\OPENCLASS\Projets\PROJET12\last p12\p12_EpicEvents_Rossignol_Hanane\env\lib\site-packages\django\contrib\admin\options.py", line 686, in wrapper
+    return self.admin_site.admin_view(view)(*args, **kwargs)
+  File "C:\Users\ross\Desktop\OPENCLASS\Projets\PROJET12\last p12\p12_EpicEvents_Rossignol_Hanane\env\lib\site-packages\django\utils\decorators.py", line 133, in _wrapped_view
+    response = view_func(request, *args, **kwargs)
+  File "C:\Users\ross\Desktop\OPENCLASS\Projets\PROJET12\last p12\p12_EpicEvents_Rossignol_Hanane\env\lib\site-packages\django\views\decorators\cache.py", line 62, in _wrapped_view_func
+    response = view_func(request, *args, **kwargs)
+  File "C:\Users\ross\Desktop\OPENCLASS\Projets\PROJET12\last p12\p12_EpicEvents_Rossignol_Hanane\env\lib\site-packages\django\contrib\admin\sites.py", line 242, in inner
+    return view(request, *args, **kwargs)
+  File "C:\Users\ross\Desktop\OPENCLASS\Projets\PROJET12\last p12\p12_EpicEvents_Rossignol_Hanane\env\lib\site-packages\django\contrib\admin\options.py", line 1893, in change_view
+    return self.changeform_view(request, object_id, form_url, extra_context)
+  File "C:\Users\ross\Desktop\OPENCLASS\Projets\PROJET12\last p12\p12_EpicEvents_Rossignol_Hanane\env\lib\site-packages\django\utils\decorators.py", line 46, in _wrapper
+    return bound_method(*args, **kwargs)
+  File "C:\Users\ross\Desktop\OPENCLASS\Projets\PROJET12\last p12\p12_EpicEvents_Rossignol_Hanane\env\lib\site-packages\django\utils\decorators.py", line 133, in _wrapped_view
+    response = view_func(request, *args, **kwargs)
+  File "C:\Users\ross\Desktop\OPENCLASS\Projets\PROJET12\last p12\p12_EpicEvents_Rossignol_Hanane\env\lib\site-packages\django\contrib\admin\options.py", line 1750, in changeform_view
+    return self._changeform_view(request, object_id, form_url, extra_context)
+  File "C:\Users\ross\Desktop\OPENCLASS\Projets\PROJET12\last p12\p12_EpicEvents_Rossignol_Hanane\env\lib\site-packages\django\contrib\admin\options.py", line 1786, in _changeform_view
+    ModelForm = self.get_form(
+  File "C:\Users\ross\Desktop\OPENCLASS\Projets\PROJET12\last p12\p12_EpicEvents_Rossignol_Hanane\env\lib\site-packages\django\contrib\admin\options.py", line 769, in get_form
+    readonly_fields = self.get_readonly_fields(request, obj)
+  File "C:\Users\ross\Desktop\OPENCLASS\Projets\PROJET12\last p12\p12_EpicEvents_Rossignol_Hanane\backend\event\admin.py", line 41, in get_readonly_fields
+    return self.readonly_fields + ['sales_contact', 'client', ]
+TypeError: can only concatenate tuple (not "list") to tuple
+"GET /admin/event/event/7/change/ HTTP/1.1" 500 120178
